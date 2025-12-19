@@ -1,1 +1,1 @@
-Sdo cAses extRaction Algorythm
+Sdo cAses extRaction Algorithm
