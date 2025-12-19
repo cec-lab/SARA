@@ -1,0 +1,111 @@
+Syndrome;ICD10- BPA;ICD9-BPA;OMIM;ORPHA
+Aarskog syndrome;Q8710;75989;305400, 100050;915
+Acrocephalopolysyndactyly (all types);Q8700;755501;201000, 201020, 101120;65759, 65798
+Alagille syndrome;Q4471;75167;118450, 610205;52, 26100, 261619
+Alport syndrome;Q8780;759870;104200, 203780, 301050;63, 88918, 88919, 88917
+Angelman syndrome;Q8785;759899;105830;72
+Aniridia-Wilms tumor syndrome WAGR;Q131;74342;194072, 612469;893
+Apert syndrome (acrocphalosyndactyly);Q8701;755500/02;101200;87
+Bardet-Biedl syndrome;Q8781;759820;209900;110
+Beckwith-Wiedemann syndrome (EMG syndrome);Q8730;759874;130650;116
+Blepharophimosis-ptosis syndrome;Q100;74360;110100;126
+Branchiootorenal syndrome (BOR syndrome);Q178;75989;113650, 610896;107
+CHARGE syndrome;Q300;75989;214800;138
+Cleidocranial dysplasia (dysostosis);Q7402;755551;119600, 216330;1452
+Cockayne syndrome;Q8711;759826;133540, 214150, 216400, 216411, 278780, 610756, 610758, 616570;191, 90321, 90322, 90324
+Cornelia de Lange syndrome (de Lange syndrome);Q8712;759821;122470, 300590, 300882, 610759, 614701;199
+Crouzon syndrome;Q751;75601;123500;207
+Dubowitz syndrome;Q8713;75989;223370;235
+Ehlers-Danlos syndrome;Q796;75685;130000 + several;287 + several
+Fragile X syndrome;Q992;75983;300624;908
+Fraser syndrome (cryptophthalmos- syndactyly);Q8702;759892;219000;2052
+Frontonasal dysplasia;Q7581;75400;136760;391474
+Gardner syndrome;Q8583;759630;175100;79665
+Gorlin-Chaudhry-Moss syndrome;Q878;759898;233500;2095
+Hallermann-Streiff syndrome;Q8705;756050;234100;2108
+Holt-Oram syndrome (heart-hand syndrome);Q8720;759842;142900;392
+Hypoglossia-Hypodactylia syndrome;Q878;759846;103300;989
+Incontinentia pigmenti;Q823;75735;308300;464
+Ivemark syndrome;Q206;75989;208530;97548
+Kartagener syndrome;Q8934;759340;244400;98861
+Kaufman-McKusick syndrome;Q518;75248;236700;2473
+Klippel-Feil syndrome;Q761;756110;118100, 214300, 613702;2345
+Klippel-Trenaunay (-Weber) syndrome (angioosteohypertrophy);Q8721;759840;149000, 608355;2346
+Larsen syndrome;Q7484;75581;150250, 245600;503, 284139
+Laurence-Moon syndrome;Q8781;759822;245800;2377
+Lenz microphthalmos syndrome;Q112;74310;309800;568
+Marfan syndrome;Q874;759860;154700, 610168;558
+McCune-Albright syndrome;Q781;756512;174800;562
+Meckel Gruber syndrome;Q6190;75989;249000 + several;564
+Melnick-Needles syndrome;Q778;759845;309350;2484
+Miller-Dieker syndrome;Q043;74224;247200;531
+Noonan syndrome;Q8714;759896;163950 + several;648
+Orofacialdigital syndrome type 1;Q8707;759802;311200;2750
+Orofacialdigital syndrome type 2;Q8707;759802;252100;2751
+Otopalatodigital syndrome type 1;Q870F;759845;311300;669, 90650
+Otopalatodigital syndrome type 2;Q870F;759845;304120;669, 90652
+Pena-Shokeir syndrome;Q870E;75989;208150, 300073;994
+Peutz-Jeghers syndrome;Q8580;759600;175200;2869
+Pfeiffer syndrome;Q750;755501;101600;710
+Poland syndrome;Q7982;75680;173800;2911
+Popliteal pterygium syndrome;Q798;756885;119500, 263650;1300, 1234
+Prader-Willi syndrome;Q8715;759872;176270, 615547;739
+Robinow-Silverman-Smith syndrome;Q8716;75989;180700, 268310;97360, 3107, 1507
+Rothmund-Thomson syndrome;Q828;757303;268400;2909
+Rubinstein-Taybi syndrome;Q8723;759841;180849, 610543,;783, 353281,
+;;;613684;353284
+Seckel syndrome;Q8718;759827;210600 + several;808
+Silver-Russel syndrome;Q8717;759823;180860, 312780;813
+Sjögren-Larsson syndrome;Q871A;75712;270200;816
+Smith-Lemli-Opitz syndrome;Q87.19;759828;270400;818
+Smith-Magenis syndrome;Q878;75989;182290;819
+Sotos syndrome;Q8731;756883;117550, 617169;821
+Stickler syndrome;Q8709;75989;108300, 604841, 184840;828, 90653, 90654, 166100
+Sturge-Weber syndrome;Q8581;759611;185300;3205
+TAR syndrome;Q8725;75526;274000;3320
+Treacher-Collins syndrome (mandibulofacial dysostosis);Q870A;756041;154500, 248390, 613717;861
+Trichorhinophalangeal syndrome;Q870B;75989;190350, 190351;77258
+Van der Woude syndrome;Q380;75989;119300, 604547, 606713;888
+Velocardiofacial syndrome/DiGeorge syndrome;D82.1;27910;188400, 192430;567
+Von Hippel Lindau syndrome;Q8582;75962;193300;892
+Waardenburg syndrome;E7030;759804;193500 + several;3440
+Weaver syndrome;Q8732;75989;277590;3447
+Weill Marchesani syndrome;Q875;75989;277600, 608328, 614819;3449
+Whistling face syndrome (Freeman- Sheldon syndrome);Q870C;759807;193700, 277720, 616266;2053
+Williams syndrome;Q8784;75989;194050;904
+Zellweger syndrome;Q8783;759875;214100 + several;912
+Fetal alcohol syndrome;Q860;76076;;1915
+Fetal cytomegalovirus (CMV) syndrome;P351;77110;;294
+Fetal hydantoin syndrome;Q861;76070;;1912
+Fetal rubella syndrome;P350;77100;;290
+Fetal thalidomide syndrome;Q8682;7607;;3312
+Fetal toxoplasmosis;P371;77121;;858
+Fetal valproate syndrome;Q868;7607;;1906
+Fetal warfarin syndrome;Q862;7607;;1914
+Fetal zika syndrome;P358;;;448237
+Achondrogenesis type 1A and type 1B;Q7700;75644;200600, 600972;932, 93299, 93298
+Achondrogenesis type 2 (incl. hypochondrogenesis);Q7701/ 02;75644;200610;93296
+Achondroplasia/hypochondroplasia;Q774;75643;100800;15
+Acrodysostosis;Q778;75658;101800;950
+Albers-Schönberg syndrome (osteopetrosis);Q782;756540;166600;53
+Camurati-Engelmann disease (diaphyseal dysplasia);Q783;756551;131300;1328
+Chondrodysplasia punctata, rhizomelic, type 1;Q773;75644;215100;177
+Chondrodysplasia punctata 2, X-linked;Q773;75644;302960;35173
+Diastrophic dysplasia;Q775;756441;222600;628
+Ellis van Creveld syndrome;Q776;75652;225500, 617088;289
+Enchondromatosis (including Maffucci);Q784/ Q7840;75641/75642;166000, 614569;296, 163634
+Jeune asphyxiating thoracic dystrophy;Q772;75640;208500 + several;474
+Kniest dysplasia;Q778;75658;156550;485
+Metaphyseal chondrodysplasia;Q7781;75645;156400;33067
+Metaphyseal dysplasia, Pyle syndrome;Q785;75655;265900;3005
+Metatropic dysplasia;Q7780;756442;156530;2635
+Multiple congenital exostosis, diaphyseal aclasia;Q786;75657;133700, 133701, 600209;321
+Nail patella syndrome (onycho-osteodysplasia);Q8722;75683;161200;2614
+Osteogenesis imperfecta;Q7800;75650;166200, 166210, 166220, 166230, 259420, 259440, 610682, 610915, 610967, 610968, 613848, 613849, 613982, 614856, 615066, 615220, 616229, 616507;666, 216796, 216804, 216812, 216820, 216828
+Osteopoikilosis;Q7880;75656;166700;1306
+Spondyloepiphyseal dysplasia congenita;Q777;75646;183900;94068
+Spondyloepiphyseal dysplasia tarda;Q777;75646;313400;93284
+Thanatophoric dysplasia;Q771;756443;187600, 187601;2655, 1860, 93274
+MURCS syndrome;Q518;75249;601076;2578
+Oculoauriculovertebral spectrum (Goldenhar syn);Q8704;75606;164210;374
+VATER association;Q8726;759895;192350;887
