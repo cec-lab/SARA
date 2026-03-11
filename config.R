@@ -40,8 +40,7 @@ sdoFileName_stage_1="sdo_1yfup_2023.csv"
 exportDir=paste0(baseDir,"/export")
 tableDir=paste0(baseDir,"/tables")
 cedap_plus_2023_file <- file.path(cedapDir, cedapFileName)
-edcFileDir <- "/home/imer/works/DARIO/export"
-
+edcFileDir <- file.path(Sys.getenv("HOME"), "Desktop", "git_hub", "SARA", "export")
 
 # FILE HANDLER ----
 

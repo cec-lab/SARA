@@ -499,8 +499,7 @@ dset$assconcept <- recode(input_df$metodi_PMA,
 #syndromes ----
 
 # Carica file sindromi
-syndromes <- read_delim("/home/imer/works/algo_sdo/tables/syndromes.csv", 
-                        delim = ";", escape_double = FALSE, trim_ws = TRUE)
+syndromes <- read.csv2(paste0(tableDir,"/syndromes.csv"))
 # 
 # # Codici e etichette
 # icd10 <- trimws(syndromes$`ICD10- BPA`)
@@ -745,7 +744,7 @@ dset <- dset %>%
     presyn = replace_na(presyn, 9),
     matdiab = replace_na(matdiab, 9),
     sp_drugs = replace_na(sp_drugs, ),
-    syndrome = replace_na(syndrome, ),
+    syndrome = replace_na(as.character(syndrome), ),
     premal1 = replace_na(premal1, 9),
     premal2 = replace_na(premal2, 9),
     premal3 = replace_na(premal3, 9),
@@ -775,7 +774,7 @@ dset <- dset %>%
     firstpre = replace_na(firstpre, 9),
     sp_firstpre = replace_na(sp_firstpre, ""),
     migrant =  replace_na(migrant, 9),
-    sp_syndrome = replace_na(sp_syndrome, ""),
+    sp_syndrome = replace_na(as.character(sp_syndrome), ""),
     drugs1 = replace_na(drugs1, ""),
     drugs2 = replace_na(drugs2, ""),
     drugs3 = replace_na(drugs3, ""),
