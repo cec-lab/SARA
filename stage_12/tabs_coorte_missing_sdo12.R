@@ -1,5 +1,5 @@
 # ---- CARICAMENTO DATI ----
-dset <- read_csv("export/sdo_stage12_transcode.csv")
+dset <- read_csv(paste0(exportDir,"/sdo_stage12_transcode.csv"))
 
 # ---- 1. CALCOLO % MANCANTI ----
 missing_pct <- sapply(dset, function(x) mean(is.na(x)) * 100)

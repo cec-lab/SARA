@@ -15,7 +15,7 @@ library(labelled)
 
 
 # PATH ----
-baseDir="/home/imer/works/algo_sdo"
+baseDir=getwd()
 sdoDir=paste0(baseDir,"/sdo")
 stage_0Dir=paste0(baseDir, "/stage_0")
 stage_1Dir=paste0(baseDir, "/stage_1")
@@ -33,7 +33,7 @@ stage_mapping=paste0(baseDir, "/mapping")
 stage_12Dir=paste0(baseDir, "/stage_12")
 
 
-cedapDir="/home/imer/works/DARIO/cedap"
+cedapDir=paste0(baseDir, "/cedap")
 cedapFileName="cedap_plus_2023.csv"
 sdoFileName_stage_0="sdo_2023_all.csv"
 sdoFileName_stage_1="sdo_1yfup_2023.csv"

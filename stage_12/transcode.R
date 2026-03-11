@@ -18,8 +18,9 @@
 rm(list=ls())
 
 # LOAD CONFIG ---
-source("/home/imer/works/algo_sdo/config.R", echo = T)
-source("/home/imer/works/algo_sdo/functions.R", echo = T)
+baseDir=getwd()
+source(paste0(baseDir,"/config.R"), echo = T)
+source(paste0(baseDir,"/functions.R"), echo = T)
 
 
 # LOAD DATA ----
@@ -342,15 +343,32 @@ dset$karyo <- ifelse(!is.na(input_df$CARIOTIPO_DEL_NATO) & input_df$CARIOTIPO_DE
 # •	2: Il bambino è morto entro la prima settimana.
 # •	9: Non noto.
 
-dset$survival <- with(input_df, ifelse(
-  !is.na(dt_decesso) & !is.na(dt_nasc),
-  ifelse(as.numeric(difftime(ymd(dt_decesso), ymd(dt_nasc), units = "days")) >= 7, 2, 2),  # morto (entro o dopo 7 gg, ma sempre 2 = No)
-  ifelse(!is.na(dt_dim) & !is.na(dt_nasc),
-         ifelse(as.numeric(difftime(ymd(dt_dim), ymd(dt_nasc), units = "days")) >= 7, 1, 1),  # vivo e dimesso >= 7 giorni = 1 = Yes
-         9  # nessuna info
-  )
-))
+# Calcolo differenze giorni
+days_to_death <- as.numeric(difftime(input_df$dt_decesso,
+                                     input_df$dt_nasc,
+                                     units = "days"))
 
+days_to_dim <- as.numeric(difftime(input_df$dt_dim,
+                                   input_df$dt_nasc,
+                                   units = "days"))
+
+dset$survival <- dplyr::case_when(
+  
+  # Morto entro 6 giorni (0–6)
+  !is.na(days_to_death) & days_to_death <= 6 ~ 2,
+  
+  # Vivo oltre 7 giorni
+  is.na(days_to_death) &
+    !is.na(days_to_dim) & days_to_dim >= 7 ~ 1,
+  
+  # Survival ignota a 7 giorni ma vivo alla dimissione <7
+  is.na(days_to_death) &
+    !is.na(days_to_dim) & days_to_dim < 7 &
+    dset$type == 1 ~ 3,
+  
+  # Nessuna informazione
+  TRUE ~ 9
+)
 
 
 
@@ -410,7 +428,7 @@ dset$nbrbaby <- case_when(
 
 
 
- 
+
 #civreg ----
 # Origine CEDAP: VITALITA
 # Destinazione EUROCAT: 1 se vitalità = 1, altrimenti 9 = Not Known
@@ -433,6 +451,37 @@ dset$bmi <- with(input_df, {
 
 
 
+#death_date ----
+
+
+dset$death_date <- case_when(
+  
+  # Non live birth → death_date non applicabile (ma teniamo coerente)
+  dset$type != 1 ~ "",
+  
+  # Morte con data valida
+  !is.na(input_df$dt_decesso) ~ format(input_df$dt_decesso, "%Y-%m-%d"),
+  
+  # Morto ma data mancante (caso teorico: survival indica morto ma no data)
+  is.na(input_df$dt_decesso) & dset$survival == 2 ~ "xxxx-xx-xx",
+  
+  # Vivo a 1 anno (follow-up completo e nessun decesso registrato)
+  is.na(input_df$dt_decesso) & dset$survival %in% c(1,3) ~ "2222-22-22",
+  
+  # Stato vitale ignoto
+  dset$survival == 9 ~ "3333-33-33",
+  
+  # Non noto se vivo o morto a 1
+  TRUE ~ "3333-33-33"
+)
+
+
+
+
+
+
+
+
 
 #'metodi_PMA' ----
 dset$assconcept <- recode(input_df$metodi_PMA,
@@ -443,108 +492,143 @@ dset$assconcept <- recode(input_df$metodi_PMA,
                           `5` = 5,
                           `6` = 10,
                           .default = 9)                      
-                          
-                          
-                          
+
+
+
 
 #syndromes ----
 
 # Carica file sindromi
-# syndromes <- read_delim("/home/imer/works/algo_sdo/tables/syndromes.csv", 
-#                         delim = ";", escape_double = FALSE, trim_ws = TRUE)
+syndromes <- read_delim("/home/imer/works/algo_sdo/tables/syndromes.csv", 
+                        delim = ";", escape_double = FALSE, trim_ws = TRUE)
 # 
 # # Codici e etichette
 # icd10 <- trimws(syndromes$`ICD10- BPA`)
 # labels <- syndromes$Syndrome
 # 
-# # Scorri ogni riga
+# # Loop sulle righe
 # for (i in 1:nrow(dset)) {
-#   # Estrai codici malfo
+#   # Estrai codici malfo e sp_malfo, riempi con NA se mancanti
 #   malfos <- as.character(unlist(dset[i, paste0("malfo", 1:6)]))
-#   malfos <- trimws(malfos)
+#   sp_malfos <- as.character(unlist(dset[i, paste0("sp_malfo", 1:6)]))
 #   
-#   # Cerca la prima sindrome
-#   match_idx <- match(malfos, icd10)
-#   first_match <- which(!is.na(match_idx))[1]
+#   if (length(malfos) < 6) malfos <- c(malfos, rep(NA, 6 - length(malfos)))
+#   if (length(sp_malfos) < 6) sp_malfos <- c(sp_malfos, rep(NA, 6 - length(sp_malfos)))
 #   
-#   if (!is.na(first_match)) {
-#     # Salva codice sindrome e descrizione
-#     dset$syndrome[i] <- icd10[match_idx[first_match]]
-#     dset$sp_syndrome[i] <- labels[match_idx[first_match]]
+#   # Nuovi vettori per malfo e sp_malfo
+#   new_malfo <- rep(NA, 6)
+#   new_sp_malfo <- rep(NA, 6)
+#   
+#   sind_codes <- c()
+#   sind_labels <- c()
+#   
+#   malfo_idx <- 1
+#   
+#   for (j in 1:6) {
+#     code <- trimws(malfos[j])
+#     label <- sp_malfos[j]
 #     
-#     # Rimuovi il codice matched e shift left
-#     malfos <- malfos[-first_match]
-#     malfos <- c(malfos, rep(NA, 6 - length(malfos)))
-#     
-#     # Riscrivi colonne malfo aggiornate
-#     for (j in 1:6) {
-#       dset[i, paste0("malfo", j)] <- malfos[j]
+#     if (!is.na(code) && code != "") {
+#       if (code %in% icd10) {
+#         # È una sindrome
+#         sind_codes <- c(sind_codes, code)
+#         sind_labels <- c(sind_labels, labels[match(code, icd10)])
+#       } else {
+#         # È una malformazione, metti a sinistra
+#         if (malfo_idx <= 6) {
+#           new_malfo[malfo_idx] <- code
+#           new_sp_malfo[malfo_idx] <- label
+#           malfo_idx <- malfo_idx + 1
+#         }
+#       }
 #     }
 #   }
+#   
+#   # Aggiorna dset con malfo shiftate
+#   for (k in 1:6) {
+#     dset[i, paste0("malfo", k)] <- new_malfo[k]
+#     dset[i, paste0("sp_malfo", k)] <- new_sp_malfo[k]
+#   }
+#   
+#   # Aggiorna sindrome
+#   if (length(sind_codes) > 0) {
+#     dset$syndrome[i] <- paste(sind_codes, collapse = "|")
+#     dset$sp_syndrome[i] <- paste(sind_labels, collapse = "|")
+#   } else {
+#     dset$syndrome[i] <- NA
+#     dset$sp_syndrome[i] <- NA
+#   }
 # }
-# === syndromes corretto con shift ===
+# 
 
-# Carica file sindromi
-syndromes <- read_delim("/home/imer/works/algo_sdo/tables/syndromes.csv", 
-                        delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
-# Codici e etichette
-icd10 <- trimws(syndromes$`ICD10- BPA`)
-labels <- syndromes$Syndrome
+icd10 <- trimws(as.character(syndromes$`ICD10- BPA`))
+labels <- as.character(syndromes$Syndrome)
+icd10_clean <- gsub("\\.", "", toupper(icd10))
 
-# Loop sulle righe
+n_sind_tot <- 0   # contatore globale
+
 for (i in 1:nrow(dset)) {
-  # Estrai codici malfo e sp_malfo, riempi con NA se mancanti
-  malfos <- as.character(unlist(dset[i, paste0("malfo", 1:6)]))
-  sp_malfos <- as.character(unlist(dset[i, paste0("sp_malfo", 1:6)]))
   
-  if (length(malfos) < 6) malfos <- c(malfos, rep(NA, 6 - length(malfos)))
-  if (length(sp_malfos) < 6) sp_malfos <- c(sp_malfos, rep(NA, 6 - length(sp_malfos)))
+  malfos <- as.character(unlist(dset[i, paste0("malfo", 1:8)]))
+  sp_malfos <- as.character(unlist(dset[i, paste0("sp_malfo", 1:8)]))
   
-  # Nuovi vettori per malfo e sp_malfo
-  new_malfo <- rep(NA, 6)
-  new_sp_malfo <- rep(NA, 6)
+  new_malfo <- rep(NA, 8)
+  new_sp_malfo <- rep(NA, 8)
   
   sind_codes <- c()
   sind_labels <- c()
   
   malfo_idx <- 1
   
-  for (j in 1:6) {
+  for (j in 1:8) {
+    
     code <- trimws(malfos[j])
     label <- sp_malfos[j]
     
     if (!is.na(code) && code != "") {
-      if (code %in% icd10) {
-        # È una sindrome
+      
+      code_clean <- gsub("\\.", "", toupper(code))
+      
+      if (code_clean %in% icd10_clean) {
+        
         sind_codes <- c(sind_codes, code)
-        sind_labels <- c(sind_labels, labels[match(code, icd10)])
+        sind_labels <- c(sind_labels,
+                         labels[match(code_clean, icd10_clean)])
+        
       } else {
-        # È una malformazione, metti a sinistra
-        if (malfo_idx <= 6) {
-          new_malfo[malfo_idx] <- code
-          new_sp_malfo[malfo_idx] <- label
-          malfo_idx <- malfo_idx + 1
-        }
+        new_malfo[malfo_idx] <- code
+        new_sp_malfo[malfo_idx] <- label
+        malfo_idx <- malfo_idx + 1
       }
     }
   }
   
-  # Aggiorna dset con malfo shiftate
-  for (k in 1:6) {
-    dset[i, paste0("malfo", k)] <- new_malfo[k]
-    dset[i, paste0("sp_malfo", k)] <- new_sp_malfo[k]
+  # Aggiorna malfo shiftate
+  for (k in 1:8) {
+    dset[[paste0("malfo", k)]][i] <- new_malfo[k]
+    dset[[paste0("sp_malfo", k)]][i] <- new_sp_malfo[k]
   }
-  
-  # Aggiorna sindrome
+  # Aggiorna sindrome + PRINT
   if (length(sind_codes) > 0) {
+    
     dset$syndrome[i] <- paste(sind_codes, collapse = "|")
     dset$sp_syndrome[i] <- paste(sind_labels, collapse = "|")
-  } else {
-    dset$syndrome[i] <- NA
-    dset$sp_syndrome[i] <- NA
+    
+    n_sind_tot <- n_sind_tot + length(sind_codes)
+    
+    cat("Riga:", i,
+        "| Numloc:", dset$numloc[i],
+        "| Sindrome trovata:", paste(sind_codes, collapse = ", "),
+        "\n")
   }
 }
+
+#controllo celle vuote dopo shift
+
+apply(dset[paste0("malfo",1:8)], 1, function(x) {
+  any(is.na(x) & !is.na(c(x[-1], NA)))
+}) |> any()
 
 
 #surgery ----
@@ -556,6 +640,7 @@ dset$surgery <- ifelse(
   1,
   9
 )
+
 
 
 
@@ -640,10 +725,12 @@ dset$drugs4 <- as.character(dset$drugs4)
 dset$drugs5 <- as.character(dset$drugs5)
 dset$extra_drugs <- as.character(dset$extra_drugs)
 dset$sp_firstpre <- as.character(dset$sp_firstpre)
+dset$gestlength <- as.numeric(dset$gestlength)
+
 
 dset <- dset %>%
   mutate(
-    datemo = replace_na(as.character(datemo), "xx-xx-xxxx"),
+    datemo = replace_na(as.character(datemo), "xxxx-xx-xx"),
     nbrbaby = replace_na(nbrbaby, 9),
     sex = replace_na(sex, 9),
     type = replace_na(type, 9),
@@ -699,7 +786,6 @@ dset <- dset %>%
     oth_cov_test = replace_na(oth_cov_test, 9),
     record_id = replace_na(record_id, 9999),
     nbrmalf = replace_na(nbrmalf, 9),
-    death_date = ifelse(is.na(death_date), 2222-22-22, death_date),
     sds_cc = replace_na(sds_cc, 9),
     mocitizenship = replace_na(mocitizenship, 999),
     sp_karyo = replace_na(sp_karyo, ""),
@@ -713,8 +799,7 @@ dset <- dset %>%
     sibanom = replace_na(sibanom, 9),
     faanom =  replace_na(faanom, 9),
     matedu = replace_na(matedu, 9),
-    
-    
+    syndrome = replace_na(syndrome, "")
   )
 
 # 6. Riempimento per tutte le colonne che iniziano con "sp_" non già trattate
@@ -754,7 +839,7 @@ for (var in vars_with_na) {
 dset <- data.frame(lapply(dset, function(x) {
   if(is.character(x)) {
     x <- trimws(x)        # elimina spazi a inizio/fine
-          
+    
   }
   return(x)
 }))
@@ -837,6 +922,29 @@ dset$sp_cario <- NULL #abbiamo compilato sp_kario che è quella giusta DA RIMUOV
 # date_cols <- sapply(dset, inherits, "Date")
 # dset[date_cols] <- lapply(dset[date_cols], function(x) paste0("'", format(x, "%Y-%m-%d")))
 
+
+# ================================
+# FORMATTAZIONE DATE EUROCAT
+# ================================
+
+#  birth_date (è Date → converti in character con slash)
+if ("birth_date" %in% names(dset)) {
+  dset$birth_date <- ifelse(
+    is.na(dset$birth_date),
+    "",
+    format(dset$birth_date, "%Y/%m/%d")
+  )
+}
+
+#  death_date (già character → sostituisci "-" con "/")
+if ("death_date" %in% names(dset)) {
+  dset$death_date <- gsub("-", "/", dset$death_date)
+}
+
+#  datemo (già character → sostituisci "-" con "/")
+if ("datemo" %in% names(dset)) {
+  dset$datemo <- gsub("-", "/", dset$datemo)
+}
 
 
 write_csv2(dset, file = paste0(exportDir, "/sdo_stage12_transcode_export.csv"), na = "")

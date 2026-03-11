@@ -21,8 +21,9 @@
 rm(list=ls())
 
 # LOAD CONFIG ---
-source("/home/imer/works/algo_sdo/config.R", echo = T)
-source("/home/imer/works/algo_sdo/functions.R", echo = T)
+baseDir=getwd()
+source(paste0(baseDir,"/config.R"), echo = T)
+source(paste0(baseDir,"/functions.R"), echo = T)
 
 SDS_circonferenza_cranica_cutoff = -2.8
 

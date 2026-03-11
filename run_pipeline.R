@@ -1,14 +1,15 @@
 # Clear existing data and graphics
 rm(list=ls())
 graphics.off()
+baseDir=getwd()
 
 # SOURCE CONFIGURATION FILE ----
 
-source("/home/imer/works/algo_sdo/config.R", echo = T)
+source(paste0(baseDir,"/config.R"), echo = T)
 
 # SOURCE CUSTOM FUNCTIONS FILE ----
 
-source("/home/imer/works/algo_sdo/functions.R", echo = T)
+source(paste0(baseDir,"/functions.R"), echo = T)
 
 # LOG FILE OPEN ----
 
