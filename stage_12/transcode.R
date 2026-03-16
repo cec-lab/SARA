@@ -31,6 +31,8 @@ eurocat_data_dict <- read_excel(paste0(tableDir,"/eurocat_data_dict.xlsx"))
 final_mapping <- read_csv2(paste0(tableDir, "/final_mapping.csv"))
 cedap_plus_2023 <- read_csv2(paste0(cedapDir,"/",cedapFileName))
 eurocat_sdo_mapping <- read_excel(paste0(tableDir, "/eurocat_sdo_mapping.xlsx"))
+icd_conversion_table <- read_excel("tables/icd_conversion_table.xlsx")
+
 
 # SOSTITUZIONE LABEL IN input_df
 # all(input_df$PROG_PAZ == revcode_subset$PROG_PAZ)  # Deve restituire TRUE per essere sicuri che le righe siano identiche
@@ -561,7 +563,7 @@ syndromes <- read.csv2(paste0(tableDir,"/syndromes.csv"))
 # 
 
 
-icd10 <- trimws(as.character(syndromes$`ICD10- BPA`))
+icd10 <- trimws(as.character(syndromes$ICD10..BPA))
 labels <- as.character(syndromes$Syndrome)
 icd10_clean <- gsub("\\.", "", toupper(icd10))
 
@@ -630,17 +632,54 @@ apply(dset[paste0("malfo",1:8)], 1, function(x) {
 }) |> any()
 
 
+
+
+#controllo e recupero etichetta - malfoX con codice e sp_malfo vuote
+
+conv_codes <- gsub("\\.", "", toupper(trimws(icd_conversion_table$ICD10)))
+conv_labels <- icd_conversion_table$Descrizione
+
+for (i in 1:nrow(dset)) {
+  
+  for (j in 1:8) {
+    
+    malfo_col <- paste0("malfo", j)
+    sp_col <- paste0("sp_malfo", j)
+    
+    code <- dset[[malfo_col]][i]
+    label <- dset[[sp_col]][i]
+    
+    # condizione che hai richiesto
+    if (!is.na(code) && code != "" && (is.na(label) || trimws(label) == "")) {
+      
+      code_clean <- gsub("\\.", "", toupper(trimws(code)))
+      
+      match_idx <- match(code_clean, conv_codes)
+      
+      if (!is.na(match_idx)) {
+        
+        dset[[sp_col]][i] <- conv_labels[match_idx]
+        
+        cat("Descrizione aggiunta | Riga:", i,
+            "| Codice:", code,
+            "| Descrizione:", conv_labels[match_idx], "\n")
+      }
+    }
+  }
+}
+
+
+
+
 #surgery ----
 #eurocat: 1, Performed (or expected) in the first year of life | 2, Performed (or expected) after the first year of life | 3, Prenatal surgery | 4, No surgery required | 5, Too severe for surgery | 6, Died before surgery | 9, Not known
 # Imposta surgery a "1" se validation_type contiene il valore 2 (da solo o tra pipe), altrimenti "9"
 
-dset$surgery <- ifelse(
+input_df$surgery <- ifelse(
   grepl("(^2$|(^|\\|)2(\\||$))", as.character(input_df$validation_type)),
   1,
   9
 )
-
-
 
 
 #VARIABILI MANCANTI

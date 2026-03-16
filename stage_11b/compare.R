@@ -15,8 +15,8 @@ source(paste0(baseDir,"/functions.R"), echo = T)
 
 sdo_stage11_cedap_with_labels <- read_csv2(paste0(exportDir, "/sdo_stage11_cedap_with_labels_export.csv"))
 
-redcapData_stage_1_1 <- read_delim(paste0(edcFileDir, "/redcapData_stage_1_1.csv"), 
-                                   delim = ";", escape_double = FALSE, trim_ws = TRUE)
+redcapData_stage_1_1 <- read_csv2(paste0(edcFileDir, "/redcapData_stage_1_1.csv"))
+                                   
 
 icd_conversion_table <- read_excel(paste0(tableDir, "/icd_conversion_table.xlsx"))
 
@@ -70,4 +70,4 @@ table(alreadyRecorded_PROG_PAZ)
 
 # Esporta dataset finale ----
 
-write_csv2(sdo_stage11_cedap_with_labels, file = paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"), na = "")
+write_csv2(sdo_stage11_cedap_with_labels, file = paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"))
