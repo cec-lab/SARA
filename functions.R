@@ -100,19 +100,20 @@ rowFilterByCodes <- function(data, colNames) {
 #' @param columns Vettore nomi colonne.
 #' @param extra_codes Codici ICD9 extra oltre il range 740-759.
 #' @return Dataset con celle non valide svuotate.
-clean_invalid_patologies <- function(df, columns, extra_codes) {
-  for (i in 1:nrow(df)) {
-    for (col in columns) {
-      cell <- df[i, get(col)]
-      if (!is.na(cell) & !(grepl("^74[0-9]|^75[0-9]", cell) | cell %in% extra_codes)) {
-        df[i, (col) := ""]
-      }
-    }
-    if (all(df[i, ..columns] == "")) {
-      df[i, (columns) := ""]
-    }
-  }
-  return(df)
+clean_invalid_patologies <- function(dt, columns, extra_codes) {
+  data.table::setDT(dt)
+  
+  dt[, (columns) := lapply(.SD, function(x) {
+    x <- as.character(x)
+    x[x == ""] <- NA
+    
+    valid <- grepl("^74[0-9]|^75[0-9]", x) | x %in% extra_codes
+    
+    x[!valid] <- NA
+    x
+  }), .SDcols = columns]
+  
+  return(dt)
 }
 
 #' extra_code_filter
@@ -133,17 +134,57 @@ extra_code_filter <- function(value) {
 #' @param data Data frame.
 #' @param col_names Colonne da esplorare.
 #' @return Subset di righe contenenti almeno un codice extra valido.
-filter_rows_extra <- function(data, col_names) {
-  valid_rows <- logical(nrow(data))
-  for (i in seq_len(nrow(data))) {
-    for (col in col_names) {
-      if (extra_code_filter(data[i, col])) {
-        valid_rows[i] <- TRUE
-        break
-      }
-    }
-  }
-  return(data[valid_rows, ])
+
+filter_rows_extra <- function(data, col_names, extra_codes) {
+  data <- data.table::as.data.table(data)
+  
+  extra_codes_vec <- as.character(extra_codes[[1]])
+  
+  test_list <- lapply(col_names, function(col) {
+    x <- as.character(data[[col]])
+    x[x == ""] <- NA
+    x %in% extra_codes_vec
+  })
+  
+  test_mat <- do.call(cbind, test_list)  
+  
+  valid_rows <- rowSums(test_mat, na.rm = TRUE) > 0
+  
+  return(data[valid_rows, ])  
+}
+
+#' shift_icd9_left
+#'
+#' @description Compatta i codici ICD9 spostando a sinistra i valori non-NA
+#' riempiendo con NA le colonne successive. Garantisce anche la conversione
+#' a character per evitare problemi con codici ICD9.
+#'
+#' @param dt Data frame o data.table contenente le colonne ICD9.
+#' @param cols Nomi delle colonne ICD9 da compattare.
+#'
+#' @return Data.table con le colonne ICD9 riallineate a sinistra.
+
+shift_icd9_left <- function(dt, cols) {
+  data.table::setDT(dt)
+  
+  # pulizia base
+  dt[, (cols) := lapply(.SD, function(x) {
+    x <- as.character(x)
+    x[x == "" | x == "NA"] <- NA
+    x
+  }), .SDcols = cols]
+  
+  # shift per riga (CORRETTO)
+  mat <- as.matrix(dt[, ..cols])
+  
+  mat <- t(apply(mat, 1, function(x) {
+    x <- x[!is.na(x)]
+    c(x, rep(NA_character_, length(cols) - length(x)))
+  }))
+  
+  dt[, (cols) := as.data.table(mat)]
+  
+  return(dt)
 }
 
 # =====================================================
