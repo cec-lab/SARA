@@ -12,6 +12,7 @@ library(VIM)
 library(ggplot2)
 library(tableone)
 library(labelled)
+library(stringr)
 
 
 # PATH ----

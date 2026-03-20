@@ -30,21 +30,25 @@ for (col in c(patology_code_cols_icd10, patology_label_cols_icd10)) {
 }
 
 
-# Conversione ICD10: codici ----
-
+# ICD10 codici
 for (col in patology_cols) {
   label_col <- paste0(col, "_code_icd10")
-  sdo_stage11_cedap_with_labels[[label_col]] <- sapply(sdo_stage11_cedap_with_labels[[col]], get_icd10_code)
+  sdo_stage11_cedap_with_labels[[label_col]] <- sapply(
+    sdo_stage11_cedap_with_labels[[col]],
+    get_icd10_code,
+    dict = icd_conversion_table
+  )
 }
 
-
-# Conversione ICD10: descrizioni ----
-
+# ICD10 descrizioni
 for (col in patology_cols) {
   label_col <- paste0(col, "_label_icd10")
-  sdo_stage11_cedap_with_labels[[label_col]] <- sapply(sdo_stage11_cedap_with_labels[[col]], get_icd10_description)
+  sdo_stage11_cedap_with_labels[[label_col]] <- sapply(
+    sdo_stage11_cedap_with_labels[[col]],
+    get_icd10_description,
+    dict = icd_conversion_table
+  )
 }
-
 
 # Metodo PROG_PAZ per identificare record già presenti in REDCap ----
 

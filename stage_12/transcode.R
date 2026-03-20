@@ -24,8 +24,8 @@ source(paste0(baseDir,"/functions.R"), echo = T)
 
 
 # LOAD DATA ----
-input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"))
-input_df <- read_csv2(paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"))
+input_df <- read_csv2(paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"), col_types = cols(PROG_PAZ = col_character()))
+input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"),col_types = cols(PROG_PAZ = col_character()))
 revcode_subset <- input_df_revcode[, c(patology_code_cols_icd10, patology_label_cols_icd9, intervention_label_cols, "revcode")]
 eurocat_data_dict <- read_excel(paste0(tableDir,"/eurocat_data_dict.xlsx"))
 final_mapping <- read_csv2(paste0(tableDir, "/final_mapping.csv"))
@@ -57,29 +57,36 @@ vars_eurocat <- eurocat_sdo_mapping$EUROCAT_Variable
 # Crea un data frame vuoto con colonne da EUROCAT e righe = dataset sorgente
 dset <- as_tibble(setNames(replicate(length(vars_eurocat), rep(NA, n_righe), simplify = FALSE), vars_eurocat))
 # Loop attraverso tutte le righe di final_mapping per il mapping
+
 for (i in seq_along(final_mapping$EUROCAT_VARIABLE)) {
-  # Nome della variabile EUROCAT e della variabile SDO associata
+  
   eurocat_var <- final_mapping$EUROCAT_VARIABLE[i]
   sdo_var <- final_mapping$SDO_CEDAP_DD[i]
   
-  # Aggiungiamo un controllo per evitare errori quando la variabile EUROCAT è NA
-  if (!is.na(eurocat_var) && !is.na(sdo_var) && sdo_var %in% colnames(input_df)) {
-    # Se la variabile SDO esiste nel dataset "input_df", prendiamo i valori
+  # ---- SKIP CASI NON VALIDI ----
+  if (is.na(eurocat_var) || is.na(sdo_var)) next
+  
+  # salta valori fissi tipo "18", "2"
+  if (grepl("^[0-9]+$", sdo_var)) next
+  
+  # ---- MAPPING ----
+  if (sdo_var %in% colnames(input_df)) {
+    
     dset[[eurocat_var]] <- input_df[[sdo_var]]
     
-    # Correggi i formati per variabili specifiche
-    # 1. Se la variabile è una data (ad esempio 'birth_date'), convertiamola in formato data
+    # conversioni
     if (eurocat_var == "birth_date") {
       dset[[eurocat_var]] <- as.Date(dset[[eurocat_var]])
     }
-    # 2. Se la variabile è un numero (ad esempio 'prog_paz'), convertiamola in formato numerico
+    
     if (eurocat_var == "prog_paz") {
       dset[[eurocat_var]] <- as.numeric(dset[[eurocat_var]])
     }
     
   } else {
-    # Se la variabile SDO non esiste o è NA, lasciamo i valori come NA (già inizializzati)
-    warning(paste("Colonna SDO mancante o NA per:", sdo_var))
+    
+    # WARNING SOLO SE DAVVERO MANCA
+    warning(paste("Colonna NON trovata:", sdo_var))
   }
 }
 
@@ -500,82 +507,40 @@ dset$assconcept <- recode(input_df$metodi_PMA,
 
 #syndromes ----
 
-# Carica file sindromi
+# ---- funzione pulizia ICD10 ----
+clean_icd10 <- function(x) {
+  x <- as.character(x)
+  x <- trimws(x)
+  x <- toupper(x)
+  x <- gsub("\\.", "", x)
+  x[x %in% c("", "NA")] <- NA
+  return(x)
+}
+
+# ---- carica file ----
 syndromes <- read.csv2(paste0(tableDir,"/syndromes.csv"))
-# 
-# # Codici e etichette
-# icd10 <- trimws(syndromes$`ICD10- BPA`)
-# labels <- syndromes$Syndrome
-# 
-# # Loop sulle righe
-# for (i in 1:nrow(dset)) {
-#   # Estrai codici malfo e sp_malfo, riempi con NA se mancanti
-#   malfos <- as.character(unlist(dset[i, paste0("malfo", 1:6)]))
-#   sp_malfos <- as.character(unlist(dset[i, paste0("sp_malfo", 1:6)]))
-#   
-#   if (length(malfos) < 6) malfos <- c(malfos, rep(NA, 6 - length(malfos)))
-#   if (length(sp_malfos) < 6) sp_malfos <- c(sp_malfos, rep(NA, 6 - length(sp_malfos)))
-#   
-#   # Nuovi vettori per malfo e sp_malfo
-#   new_malfo <- rep(NA, 6)
-#   new_sp_malfo <- rep(NA, 6)
-#   
-#   sind_codes <- c()
-#   sind_labels <- c()
-#   
-#   malfo_idx <- 1
-#   
-#   for (j in 1:6) {
-#     code <- trimws(malfos[j])
-#     label <- sp_malfos[j]
-#     
-#     if (!is.na(code) && code != "") {
-#       if (code %in% icd10) {
-#         # È una sindrome
-#         sind_codes <- c(sind_codes, code)
-#         sind_labels <- c(sind_labels, labels[match(code, icd10)])
-#       } else {
-#         # È una malformazione, metti a sinistra
-#         if (malfo_idx <= 6) {
-#           new_malfo[malfo_idx] <- code
-#           new_sp_malfo[malfo_idx] <- label
-#           malfo_idx <- malfo_idx + 1
-#         }
-#       }
-#     }
-#   }
-#   
-#   # Aggiorna dset con malfo shiftate
-#   for (k in 1:6) {
-#     dset[i, paste0("malfo", k)] <- new_malfo[k]
-#     dset[i, paste0("sp_malfo", k)] <- new_sp_malfo[k]
-#   }
-#   
-#   # Aggiorna sindrome
-#   if (length(sind_codes) > 0) {
-#     dset$syndrome[i] <- paste(sind_codes, collapse = "|")
-#     dset$sp_syndrome[i] <- paste(sind_labels, collapse = "|")
-#   } else {
-#     dset$syndrome[i] <- NA
-#     dset$sp_syndrome[i] <- NA
-#   }
-# }
-# 
 
-
-icd10 <- trimws(as.character(syndromes$ICD10..BPA))
+icd10_clean <- clean_icd10(syndromes$ICD10..BPA)
 labels <- as.character(syndromes$Syndrome)
-icd10_clean <- gsub("\\.", "", toupper(icd10))
 
-n_sind_tot <- 0   # contatore globale
+# ---- DEBUG: codici non trovati ----
+all_codes <- unique(unlist(dset[, paste0("malfo", 1:8)]))
+missing_codes <- setdiff(clean_icd10(all_codes), icd10_clean)
 
+cat("\nCODICI NON TROVATI IN SYNDROMES:\n")
+print(missing_codes)
+
+# ---- inizializza ----
+n_sind_tot <- 0
+
+# ---- loop principale ----
 for (i in 1:nrow(dset)) {
   
   malfos <- as.character(unlist(dset[i, paste0("malfo", 1:8)]))
   sp_malfos <- as.character(unlist(dset[i, paste0("sp_malfo", 1:8)]))
   
-  new_malfo <- rep(NA, 8)
-  new_sp_malfo <- rep(NA, 8)
+  new_malfo <- rep(NA_character_, 8)
+  new_sp_malfo <- rep(NA_character_, 8)
   
   sind_codes <- c()
   sind_labels <- c()
@@ -584,89 +549,101 @@ for (i in 1:nrow(dset)) {
   
   for (j in 1:8) {
     
-    code <- trimws(malfos[j])
+    cell <- malfos[j]
     label <- sp_malfos[j]
     
-    if (!is.na(code) && code != "") {
+    if (is.na(cell) || cell == "") next
+    
+    # ---- split multi-codici ----
+    codes_split <- unlist(strsplit(cell, "\\|"))
+    codes_split <- clean_icd10(codes_split)
+    
+    for (code_clean in codes_split) {
       
-      code_clean <- gsub("\\.", "", toupper(code))
+      if (is.na(code_clean)) next
       
-      if (code_clean %in% icd10_clean) {
-        
-        sind_codes <- c(sind_codes, code)
-        sind_labels <- c(sind_labels,
-                         labels[match(code_clean, icd10_clean)])
+      idx <- match(code_clean, icd10_clean)
+      
+      if (!is.na(idx)) {
+        # è sindrome
+        sind_codes <- c(sind_codes, code_clean)
+        sind_labels <- c(sind_labels, labels[idx])
         
       } else {
-        new_malfo[malfo_idx] <- code
-        new_sp_malfo[malfo_idx] <- label
-        malfo_idx <- malfo_idx + 1
+        # NON è sindrome → resta in malfo
+        if (malfo_idx <= 8) {
+          new_malfo[malfo_idx] <- code_clean
+          new_sp_malfo[malfo_idx] <- label
+          malfo_idx <- malfo_idx + 1
+        }
       }
     }
   }
   
-  # Aggiorna malfo shiftate
+  # ---- aggiorna malfo shiftate ----
   for (k in 1:8) {
     dset[[paste0("malfo", k)]][i] <- new_malfo[k]
     dset[[paste0("sp_malfo", k)]][i] <- new_sp_malfo[k]
   }
-  # Aggiorna sindrome + PRINT
+  
+  # ---- aggiorna sindromi ----
   if (length(sind_codes) > 0) {
     
-    dset$syndrome[i] <- paste(sind_codes, collapse = "|")
-    dset$sp_syndrome[i] <- paste(sind_labels, collapse = "|")
+    dset$syndrome[i] <- paste(unique(sind_codes), collapse = "|")
+    dset$sp_syndrome[i] <- paste(unique(sind_labels), collapse = "|")
     
-    n_sind_tot <- n_sind_tot + length(sind_codes)
+    n_sind_tot <- n_sind_tot + length(unique(sind_codes))
     
     cat("Riga:", i,
         "| Numloc:", dset$numloc[i],
-        "| Sindrome trovata:", paste(sind_codes, collapse = ", "),
+        "| Sindrome trovata:", paste(unique(sind_codes), collapse = ", "),
         "\n")
   }
 }
 
-#controllo celle vuote dopo shift
-
-apply(dset[paste0("malfo",1:8)], 1, function(x) {
+# ---- controllo shift ----
+check_shift <- apply(dset[paste0("malfo",1:8)], 1, function(x) {
   any(is.na(x) & !is.na(c(x[-1], NA)))
-}) |> any()
+})
+
+cat("\nRighe con buchi:", sum(check_shift), "\n")
 
 
 
 
 #controllo e recupero etichetta - malfoX con codice e sp_malfo vuote
 
-conv_codes <- gsub("\\.", "", toupper(trimws(icd_conversion_table$ICD10)))
-conv_labels <- icd_conversion_table$Descrizione
-
-for (i in 1:nrow(dset)) {
-  
-  for (j in 1:8) {
-    
-    malfo_col <- paste0("malfo", j)
-    sp_col <- paste0("sp_malfo", j)
-    
-    code <- dset[[malfo_col]][i]
-    label <- dset[[sp_col]][i]
-    
-    # condizione che hai richiesto
-    if (!is.na(code) && code != "" && (is.na(label) || trimws(label) == "")) {
-      
-      code_clean <- gsub("\\.", "", toupper(trimws(code)))
-      
-      match_idx <- match(code_clean, conv_codes)
-      
-      if (!is.na(match_idx)) {
-        
-        dset[[sp_col]][i] <- conv_labels[match_idx]
-        
-        cat("Descrizione aggiunta | Riga:", i,
-            "| Codice:", code,
-            "| Descrizione:", conv_labels[match_idx], "\n")
-      }
-    }
-  }
-}
+# conv_codes <- gsub("\\.", "", toupper(trimws(icd_conversion_table$ICD10)))
+# conv_labels <- icd_conversion_table$Descrizione
+# 
+# for (i in 1:nrow(dset)) {
+#   
+#   for (j in 1:8) {
+#     
+#     malfo_col <- paste0("malfo", j)
+#     sp_col <- paste0("sp_malfo", j)
+#     
+#     code <- dset[[malfo_col]][i]
+#     label <- dset[[sp_col]][i]
+#     
+#     # condizione che hai richiesto
+#     if (!is.na(code) && code != "" && (is.na(label) || trimws(label) == "")) {
+#       
+#       code_clean <- gsub("\\.", "", toupper(trimws(code)))
+#       
+#       match_idx <- match(code_clean, conv_codes)
+#       
+#       if (!is.na(match_idx)) {
+#         
+#         dset[[sp_col]][i] <- conv_labels[match_idx]
+#         
+#         cat("Descrizione aggiunta | Riga:", i,
+#             "| Codice:", code,
+#             "| Descrizione:", conv_labels[match_idx], "\n")
+#       }
+#     }
+#   }
+# }
 
 
 

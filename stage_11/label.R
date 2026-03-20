@@ -23,6 +23,7 @@ source(paste0(baseDir,"/functions.R"), echo = T)
 icd_conversion_table <- read_excel(paste0(tableDir,"/icd_conversion_table.xlsx"))
 surgery <- read_excel(paste0(tableDir, "/surgery.xlsx"))
 sdo_stage10_cedap_combined <- read_csv2(paste0(exportDir, "/sdo_stage10_cedap_combined_export.csv"))
+extra_codes <- read_csv2(paste0(tableDir,"/extra_codes.csv"))
 
 
 
@@ -32,12 +33,6 @@ for (col in c(patology_cols, intervention_cols)) {
   sdo_stage10_cedap_combined[[paste0(col, "_label")]] <- NA
 }
 
-
-# Mappatura dizionari ----
-
-icd_map <- icd_conversion_table %>%
-  transmute(codice = pad_to_6_digits(as.character(ICD9CM)), descrizione = Descrizione)
-
 surgery_map <- surgery %>%
   transmute(codice = as.character(Codice), descrizione = DescrIntervento)
 
@@ -45,9 +40,21 @@ surgery_map <- surgery %>%
 
 # Applica alle colonne di patologia ----
 
+extra_codes <- extra_codes %>%
+  mutate(ICD9 = str_pad(as.character(ICD9), 6, "right", "0"))
+
+sdo_stage10_cedap_combined <- sdo_stage10_cedap_combined %>%
+  mutate(across(all_of(patology_cols),
+                ~ str_pad(as.character(.), width = 6, side = "right", pad = "0")))
+
 for (col in patology_cols) {
   label_col <- paste0(col, "_label")
-  sdo_stage10_cedap_combined[[label_col]] <- sapply(sdo_stage10_cedap_combined[[col]], map_multi_codes_pat, dict = icd_map)
+  sdo_stage10_cedap_combined[[label_col]] <- sapply(
+    sdo_stage10_cedap_combined[[col]],
+    map_multi_codes_pat,
+    dict = icd_conversion_table,
+    extra_codes = extra_codes
+  )
 }
 
 

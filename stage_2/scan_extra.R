@@ -28,7 +28,7 @@ sdo_invalid <- read_csv2(paste0(exportDir, "/sdo_stage_1_nonvalide_export.csv"))
 sdo_extra_valid <- filter_rows_extra(sdo_invalid,columns_icd9_extra,extra_codes)
 
 # Uniforma colonne
-sdo_extra_valid <- sdo_extra_valid[, colnames(sdo_valid_stage1), drop = FALSE]
+sdo_extra_valid <- sdo_extra_valid[, colnames(sdo_valid_stage1), with = FALSE]
 
 # Unione
 sdo_stage_2_complete <- rbindlist(list(sdo_valid_stage1, sdo_extra_valid), fill = TRUE)

@@ -103,11 +103,13 @@ rowFilterByCodes <- function(data, colNames) {
 clean_invalid_patologies <- function(dt, columns, extra_codes) {
   data.table::setDT(dt)
   
+  extra_codes_vec <- as.character(extra_codes[[1]])
+  
   dt[, (columns) := lapply(.SD, function(x) {
     x <- as.character(x)
     x[x == ""] <- NA
     
-    valid <- grepl("^74[0-9]|^75[0-9]", x) | x %in% extra_codes
+    valid <- grepl("^74[0-9]|^75[0-9]", x) | x %in% extra_codes_vec
     
     x[!valid] <- NA
     x
@@ -121,11 +123,15 @@ clean_invalid_patologies <- function(dt, columns, extra_codes) {
 #' @description Controlla se un codice è tra quelli extra definiti.
 #' @param value Codice da validare.
 #' @return TRUE se codice è valido tra quelli extra, FALSE altrimenti.
-extra_code_filter <- function(value) {
+#' 
+extra_code_filter <- function(value, extra_codes) {
   if (is.na(value)) return(FALSE)
   value <- as.character(value)
   if (nchar(value) < 3) return(FALSE)
-  return(value %in% extra_codes)
+  
+  extra_codes_vec <- as.character(extra_codes[[1]])
+  
+  return(value %in% extra_codes_vec)
 }
 
 #' filter_rows_extra
@@ -134,23 +140,21 @@ extra_code_filter <- function(value) {
 #' @param data Data frame.
 #' @param col_names Colonne da esplorare.
 #' @return Subset di righe contenenti almeno un codice extra valido.
-
+#' 
 filter_rows_extra <- function(data, col_names, extra_codes) {
   data <- data.table::as.data.table(data)
   
   extra_codes_vec <- as.character(extra_codes[[1]])
   
-  test_list <- lapply(col_names, function(col) {
+  test_mat <- do.call(cbind, lapply(col_names, function(col) {
     x <- as.character(data[[col]])
     x[x == ""] <- NA
     x %in% extra_codes_vec
-  })
+  }))
   
-  test_mat <- do.call(cbind, test_list)  
+  valid_rows <- which(rowSums(test_mat, na.rm = TRUE) > 0)
   
-  valid_rows <- rowSums(test_mat, na.rm = TRUE) > 0
-  
-  return(data[valid_rows, ])  
+  return(data[valid_rows])
 }
 
 #' shift_icd9_left
@@ -174,15 +178,14 @@ shift_icd9_left <- function(dt, cols) {
     x
   }), .SDcols = cols]
   
-  # shift per riga (CORRETTO)
   mat <- as.matrix(dt[, ..cols])
   
-  mat <- t(apply(mat, 1, function(x) {
+  mat_shifted <- t(apply(mat, 1, function(x) {
     x <- x[!is.na(x)]
     c(x, rep(NA_character_, length(cols) - length(x)))
   }))
   
-  dt[, (cols) := as.data.table(mat)]
+  dt[, (cols) := as.data.table(mat_shifted)]
   
   return(dt)
 }
@@ -615,15 +618,20 @@ sottostringhe_uguali <- function(x) {
 #' @description Converte una stringa di codici ICD9 (separati da "|") in codici ICD10 utilizzando la tabella di conversione in tables.
 #' @param code_str Stringa con codici ICD9 concatenati (es. "74310|75650").
 #' @return Stringa con codici ICD10 corrispondenti ai valori ICD9: "74310|75650", sempre separati da "|".
-get_icd10_code <- function(code_str) {
-  if (is.na(code_str) || code_str == "") return(NA)
+
+get_icd10_code <- function(code_str, dict) {
+  if (is.na(code_str) || code_str == "") return(NA_character_)
+  
   codes <- str_split(code_str, "\\|")[[1]]
+  
   labels <- sapply(codes, function(codice) {
-    codice <- str_trim(codice)
-    codice_padded <- str_pad(codice, width = 6, pad = "0", side = "right")
-    label <- icd_conversion_table$ICD10[icd_conversion_table$ICD9CM == codice_padded]
-    if (length(label) > 0) label else "NA"
+    codice <- str_pad(str_trim(codice), 6, "right", "0")
+    
+    idx <- match(codice, dict$ICD9CM)
+    
+    if (!is.na(idx)) dict$ICD10[idx] else NA_character_
   })
+  
   paste(labels, collapse = "|")
 }
 
@@ -632,15 +640,20 @@ get_icd10_code <- function(code_str) {
 #' @description Restituisce le descrizioni testuali (label) ICD10 corrispondenti ai codici ICD9 forniti, tramite conversione.
 #' @param code_str Stringa di codici ICD9 (separati da "|").
 #' @return Stringa con label ICD10 corrispondenti, separate da "|".
-get_icd10_description <- function(code_str) {
-  if (is.na(code_str) || code_str == "") return(NA)
+
+get_icd10_description <- function(code_str, dict) {
+  if (is.na(code_str) || code_str == "") return(NA_character_)
+  
   codes <- str_split(code_str, "\\|")[[1]]
+  
   labels <- sapply(codes, function(codice) {
-    codice <- str_trim(codice)
-    codice_padded <- str_pad(codice, width = 6, pad = "0", side = "right")
-    label <- icd_conversion_table$Descrizione[icd_conversion_table$ICD9CM == codice_padded]
-    if (length(label) > 0) label else "NA"
+    codice <- str_pad(str_trim(codice), 6, "right", "0")
+    
+    idx <- match(codice, dict$ICD9CM)
+    
+    if (!is.na(idx)) dict$Descrizione[idx] else NA_character_
   })
+  
   paste(labels, collapse = "|")
 }
 
@@ -668,29 +681,34 @@ map_multi_codes_interv <- function(code_str, dict) {
 #' @param code_str Stringa contenente codici di patologia.
 #' @param dict Dizionario con colonne `codice` e `descrizione`.
 #' @return Stringa con descrizioni associate, separate da "|".
-map_multi_codes_pat <- function(code_str, dict) {
-  if (is.na(code_str) || code_str == "") return(NA)
-  codes <- str_split(code_str, "\\|")[[1]]
-  labels <- sapply(codes, function(codice) {
-    codice <- str_trim(codice)
-    codice_padded <- pad_to_6_digits(codice)
-    label <- dict$descrizione[dict$codice == codice_padded]
-    if (length(label) > 0) label else "NA"
-  })
-  paste(labels, collapse = "|")
-}
 
-#' pad_to_6_digits
-#'
-#' @description Normalizza un codice ICD9 portandolo a 6 caratteri, aggiungendo zeri a destra (aggiunge gli zeri finali per uniformare tutti i codici a 6 cifre) .
-#' @param code Codice ICD9 da formattare.
-#' @return Codice ICD9 con padding fino a 6 cifre (stringa).
-pad_to_6_digits <- function(code) {
-  code <- as.character(code)
-  code <- str_replace_all(code, "\\s+", "")
-  n <- nchar(code)
-  ifelse(n == 5, paste0(code, "0"),
-         ifelse(n == 4, paste0(code, "00"), code))
+map_multi_codes_pat <- function(code_str, dict, extra_codes) {
+  if (is.na(code_str) || code_str == "") return(NA_character_)
+  
+  codes <- str_split(code_str, "\\|")[[1]]
+  
+  labels <- sapply(codes, function(codice) {
+    codice <- str_pad(str_trim(codice), 6, "right", "0")
+    
+    # 1. lookup principale
+    idx_main <- match(codice, dict$ICD9CM)
+    
+    if (!is.na(idx_main)) {
+      return(dict$Descrizione[idx_main])
+    }
+    
+    # 2. fallback su extra_codes
+    idx_extra <- match(codice, str_pad(extra_codes$ICD9, 6, "right", "0"))
+    
+    if (!is.na(idx_extra)) {
+      return(extra_codes$Descrizione[idx_extra])
+    }
+    
+    # 3. non trovato
+    return(NA_character_)
+  })
+  
+  paste(labels, collapse = "|")
 }
 
 # =====================================================
