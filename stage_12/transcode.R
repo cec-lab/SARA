@@ -964,6 +964,8 @@ if ("datemo" %in% names(dset)) {
 
 write_csv2(dset, file = paste0(exportDir, "/sdo_stage12_transcode_export.csv"), na = "")
 
+write_csv2(dset, file.path(gitDir_templates, "sdo_stage12_transcode_export.csv")) #path generalizzata <- config.R
+
 
 
 
