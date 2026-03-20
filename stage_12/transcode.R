@@ -841,6 +841,10 @@ dset$sp_cario <- NULL #abbiamo compilato sp_kario che è quella giusta DA RIMUOV
 
 write_csv2(dset, file = paste0(exportDir, "/sdo_stage12_transcode_export.csv"), na = "")
 
+project_base <- file.path(path.expand("~"), "Desktop", "git_hub")  # <-- cambia SOLO "Desktop"
 
+target_dir <- file.path(project_base, "DARIO", "templates")
+
+write_csv2(dset, file.path(target_dir, "sdo_stage12_transcode_export.csv"))
 
 
