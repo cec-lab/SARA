@@ -71,6 +71,11 @@ sdo_stage11_cedap_with_labels$alreadyRecorded_PROG_PAZ <- alreadyRecorded_PROG_P
 # (opzionale) riepilogo
 table(alreadyRecorded_PROG_PAZ)
 
+#aggiunta colonne revcode e note ----
+
+sdo_stage11_cedap_with_labels$revcode <- 9
+sdo_stage11_cedap_with_labels$note <- ""
+
 
 # Esporta dataset finale ----
 

@@ -234,10 +234,14 @@ dset$consang <- recode(input_df$CONSANGUINEITA,
 # "99" = Not known
 # Step 1: Calcolo dei concepimenti precedenti
 
-input_df$CONCEPIMENTI_PRECEDENTI <- dplyr::case_when(   #avevamo messo le etichette in sds. adesso riconvertito per calcolo eurocat
-  input_df$CONCEPIMENTI_PRECEDENTI == "SI" ~ 1,
-  input_df$CONCEPIMENTI_PRECEDENTI == "NO" ~ 0,
-  TRUE ~ NA_real_
+input_df$CONCEPIMENTI_PRECEDENTI <- rowSums(
+  cbind(
+    input_df$NUMERO_ABORTI_SPONTANEI,
+    input_df$NUMERO_IVG,
+    input_df$NUMERO_NATI_VIVI,
+    input_df$NUMERO_NATI_MORTI
+  ),
+  na.rm = TRUE
 )
 
 # Step 2: Transcodifica secondo EUROCAT
