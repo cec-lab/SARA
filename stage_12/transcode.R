@@ -203,11 +203,14 @@ dset$sex <- recode(as.character(input_df$SEX_NUM),
                    .default = 9)
 
 # TYPE ----
-dset$type <- recode(input_df$VITALITA,
-                    `1` = 1,  # Live birth
-                    `2` = 2,  # Stillbirth
-                    .default = 9)  # Not known
+# Copia i valori di VITALITA in type; ricodifica 1 e 9 in 1 e assegna 1 anche ai valori mancanti (NA),
+# lasciando invariati tutti gli altri valori (es. 2 rimane 2)
 
+dset$type <- recode(input_df$VITALITA,
+                    `1` = 1,
+                    `9` = 1,
+                    .missing = 1)
+  
 # consang ----
 # CEDAP: 1-3 = gradi di consanguineità (fino al 6°), 0 = non consanguinei
 # EUROCAT: 1 = Relationship of second cousin or closer, 0 = Not related or more distant, 9 = Not known
@@ -311,7 +314,7 @@ ricodifica_vars <- c("sex", "consang", "totpreg", "socm", "moanom", "faanom",
 
 
 
-# === 5. MAPPING CON RICALCOLO ===
+# === 5. MAPPING CON RICALCOLO ===----
 ricalcolo_vars <- final_mapping %>%
   filter(CALCOLARE == 1) %>%
   pull(EUROCAT_VARIABLE)
@@ -383,7 +386,6 @@ dset$survival <- dplyr::case_when(
 
 
 # condisc ----
-# DA VERIFICARE
 # Origine CEDAP: default implicito = '9' 
 # Destinazione EUROCAT:
 #   1 = Alive ,
@@ -483,11 +485,6 @@ dset$death_date <- case_when(
   # Non noto se vivo o morto a 1
   TRUE ~ "3333-33-33"
 )
-
-
-
-
-
 
 
 
@@ -659,7 +656,9 @@ input_df$surgery <- ifelse(
 )
 
 
-#VARIABILI MANCANTI
+
+
+#VARIABILI MANCANTI ----
 
 
 # lista delle variabili EUROCAT con mapping diretto
@@ -703,7 +702,7 @@ colSums(is.na(dset))
 
 
 
-# Sostituzione NA per variabili specifiche in dset ----
+# LAVORO NA IN 9 O "" ----
 
 # 1. Rimozione colonne non necessarie
 dset$cov_severity <- NULL
