@@ -1,10 +1,10 @@
 [1] "READING SDO FILE.."
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_1yfup_2023.csv [======================================---------------------------------------------] 232.66GB/s, eta:  0sindexing sdo_1yfup_2023.csv [===================================================================================] 593.72MB/s, eta:  0s                                                                                                                                      Rows: 35579 Columns: 50
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_1yfup_2023.csv [========================------------------------] 53.15GB/s, eta:  0sindexing sdo_1yfup_2023.csv [===============================================] 761.38MB/s, eta:  0s                                                                                                  Rows: 35579 Columns: 50
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (29): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD_DIM, MPR, COD_PAT1, FLAG_PAT, PROV_...
-dbl  (19): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_PAZ, interv6, interv7, interv8, inter...
+chr  (29): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD...
+dbl  (19): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_P...
 date  (2): dt_nasc, dt_decesso
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
@@ -262,11 +262,11 @@ date  (2): dt_nasc, dt_decesso
 > # LOAD DATA ---
 > sdo <- read_csv2(paste0(sdoDir, "/", sdoFileName_stage_1))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_1yfup_2023.csv [=========================================------------------------------------------] 298.17GB/s, eta:  0sindexing sdo_1yfup_2023.csv [===================================================================================] 702.11MB/s, eta:  0s                                                                                                                                      Rows: 35579 Columns: 50
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_1yfup_2023.csv [===========================--------------------] 487.05GB/s, eta:  0sindexing sdo_1yfup_2023.csv [===============================================] 996.45MB/s, eta:  0s                                                                                                  Rows: 35579 Columns: 50
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (29): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD_DIM, MPR, COD_PAT1, FLAG_PAT, PROV_...
-dbl  (19): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_PAZ, interv6, interv7, interv8, inter...
+chr  (29): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD...
+dbl  (19): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_P...
 date  (2): dt_nasc, dt_decesso
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
@@ -284,9 +284,9 @@ date  (2): dt_nasc, dt_decesso
 > sdo_invalid <- sdo_filtered[[2]]
 
 > write_csv2(sdo_valid, file=paste0(exportDir, "/sdo_stage_1_valide_export.csv"))
-wrote 2.96kB in  0s, 326.93MB/s                                                                                                                                    wrote 1.00TB in  0s, 21.90TB/s                                                                                                                                    
+wrote 2.96kB in  0s, 428.40MB/s                                                                                                wrote 1.00TB in  0s, 28.25TB/s                                                                                                
 > write_csv2(sdo_invalid, file=paste0(exportDir, "/sdo_stage_1_nonvalide_export.csv"))
-wrote 77.63kB in  0s, 7.08GB/swrote 1.00TB in  0s, 24.81TB/s                                                                                                                                    [1] "STAGE 1 END"
+wrote 77.63kB in  0s, 7.75GB/swrote 1.00TB in  0s, 36.73TB/s                                                                                                [1] "STAGE 1 END"
 [1] "STAGE 2 START"
 
 > # =====================================================================
@@ -543,8 +543,8 @@ date  (2): dt_nasc, dt_decesso
 > # LOAD DATI ---
 > extra_codes <- read_csv2(paste0(tableDir, "/extra_codes.csv")) 
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing extra_codes.csv [======================================================================================] 333.45MB/s, eta:  0s                                                                                                                                      Rows: 72 Columns: 3
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing extra_codes.csv [==================================================] 275.46MB/s, eta:  0s                                                                                                  Rows: 72 Columns: 3
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (2): ICD9, Descrizione
 dbl (1): ICD9Co
@@ -554,11 +554,11 @@ dbl (1): ICD9Co
 
 > sdo_valid_stage1 <- read_csv2(paste0(exportDir, "/sdo_stage_1_valide_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_1_valide_export.csv [=========================================================================] 42.15GB/s, eta:  0s                                                                                                                                      Rows: 2013 Columns: 50
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_1_valide_export.csv [=====================================] 72.67GB/s, eta:  0s                                                                                                  Rows: 2013 Columns: 50
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (29): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD_DIM, MPR, COD_PAT1, FLAG_PAT, PROV_...
-dbl  (19): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_PAZ, interv6, interv7, interv8, inter...
+chr  (29): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD...
+dbl  (19): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_P...
 date  (2): dt_nasc, dt_decesso
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
@@ -566,11 +566,11 @@ date  (2): dt_nasc, dt_decesso
 
 > sdo_invalid <- read_csv2(paste0(exportDir, "/sdo_stage_1_nonvalide_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_1_nonvalide_export.csv [==============================---------------------------------------] 290.75GB/s, eta:  0sindexing sdo_stage_1_nonvalide_export.csv [=====================================================================] 368.66MB/s, eta:  0s                                                                                                                                      Rows: 33566 Columns: 50
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_1_nonvalide_export.csv [===================--------------] 287.62GB/s, eta:  0sindexing sdo_stage_1_nonvalide_export.csv [=================================] 818.09MB/s, eta:  0s                                                                                                  Rows: 33566 Columns: 50
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (26): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD_DIM, MPR, COD_PAT1, FLAG_PAT, PROV_...
-dbl  (22): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_PAZ, patol5, interv3, interv5, interv...
+chr  (26): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD...
+dbl  (22): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, PESO_GR, PROG_P...
 date  (2): dt_nasc, dt_decesso
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
@@ -602,9 +602,9 @@ date  (2): dt_nasc, dt_decesso
 
 > # EXPORT ---
 > write_csv2(sdo_stage_2_complete, paste0(exportDir, "/sdo_stage_2_valide_all_export.csv"))
-wrote 5.85kB in  0s, 490.57MB/s                                                                                                                                    wrote 1.00TB in  0s, 28.55TB/s                                                                                                                                    
+wrote 5.85kB in  0s, 981.13MB/s                                                                                                wrote 1.00TB in  0s, 43.00TB/s                                                                                                
 > write_csv2(sdo_extra_valid, paste0(exportDir, "/sdo_stage_2_valide_extra_codes_export.csv"))
-wrote 2.97kB in  0s, 270.99MB/s                                                                                                                                    wrote 1.00TB in  0s, 48.12TB/s                                                                                                                                    Warning message:
+wrote 2.97kB in  0s, 244.42MB/s                                                                                                wrote 1.00TB in  0s, 64.94TB/s                                                                                                Warning message:
 One or more parsing issues, call `problems()` on your data frame for details, e.g.:
   dat <- vroom(...)
   problems(dat) 
@@ -861,8 +861,8 @@ One or more parsing issues, call `problems()` on your data frame for details, e.
 > # LOAD DATA
 > file_minor_codes <- read_csv2(paste0(tableDir,"/minor_codes.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing minor_codes.csv [======================================================================================] 221.56MB/s, eta:  0s                                                                                                                                      Rows: 61 Columns: 2
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing minor_codes.csv [==================================================] 119.57MB/s, eta:  0s                                                                                                  Rows: 61 Columns: 2
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (1): Patologia
 dbl (1): ICD9
@@ -872,8 +872,8 @@ dbl (1): ICD9
 
 > minor_codes <- read_csv2(paste0(tableDir, "/minor_codes.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing minor_codes.csv [======================================================================================] 150.66MB/s, eta:  0s                                                                                                                                      Rows: 61 Columns: 2
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing minor_codes.csv [==================================================] 221.56MB/s, eta:  0s                                                                                                  Rows: 61 Columns: 2
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (1): Patologia
 dbl (1): ICD9
@@ -885,11 +885,11 @@ dbl (1): ICD9
 
 > sdo_stage_2_complete <- read_csv2(paste0(exportDir,"/sdo_stage_2_valide_all_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_2_valide_all_export.csv [=====================================================================] 54.05GB/s, eta:  0s                                                                                                                                      Rows: 2834 Columns: 50
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_2_valide_all_export.csv [=================================] 71.19GB/s, eta:  0s                                                                                                  Rows: 2834 Columns: 50
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (23): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD_DIM, MPR, FLAG_PAT, PROV_RES, REGIM...
-dbl  (24): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, COD_PAT1, PESO_GR, PROG_PAZ, patol2, patol3, patol4...
+chr  (23): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD...
+dbl  (24): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, COD_PAT1, PESO_...
 lgl   (1): patol6
 date  (2): dt_nasc, dt_decesso
 
@@ -898,8 +898,8 @@ date  (2): dt_nasc, dt_decesso
 
 > extra_codes <- read_csv2(paste0(tableDir, "/extra_codes.csv")) 
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing extra_codes.csv [======================================================================================] 342.46MB/s, eta:  0s                                                                                                                                      Rows: 72 Columns: 3
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing extra_codes.csv [==================================================] 333.45MB/s, eta:  0s                                                                                                  Rows: 72 Columns: 3
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (2): ICD9, Descrizione
 dbl (1): ICD9Co
@@ -911,7 +911,7 @@ dbl (1): ICD9Co
 > sdo_stage_3_complete <- clean_minor_codes(sdo_stage_2_complete, icd9SearchCols, minor_codes)
 
 > write_csv2(sdo_stage_3_complete, file=paste0(exportDir, "/sdo_stage_3_valide_all_export.csv"))
-wrote 5.64kB in  0s, 622.52MB/s                                                                                                                                    wrote 1.00TB in  0s, 34.75TB/s                                                                                                                                    
+wrote 5.64kB in  0s, 815.72MB/s                                                                                                wrote 1.00TB in  0s, 48.53TB/s                                                                                                
 > invalid_codes <- verify_invalid_codes(sdo_stage_3_complete, icd9SearchCols, minor_codes, extra_codes) # CHIARIRE FUNZIONAMENTO
 [1] "Riga 1 - Valori: 7470, , , , , "
 [1] "Riga 2 - Valori: 7503, 7500, , , , "
@@ -12104,11 +12104,11 @@ dbl (1): ICD9Co
 > #LOAD DATA----
 > sdo_stage_3_nominors_export <-read_csv2(paste0(exportDir,"/sdo_stage_3_valide_all_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_3_valide_all_export.csv [=====================================================================] 59.87GB/s, eta:  0s                                                                                                                                      Rows: 2540 Columns: 50
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_3_valide_all_export.csv [=================================] 83.82GB/s, eta:  0s                                                                                                  Rows: 2540 Columns: 50
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (23): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD_DIM, MPR, FLAG_PAT, PROV_RES, REGIM...
-dbl  (24): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, COD_PAT1, PESO_GR, PROG_PAZ, patol2, patol3, patol4...
+chr  (23): COD_RG, COD_PRES, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, MOD...
+dbl  (24): AA_SDO, PROG_SDO, AA_DIM, ETA, ETA_GG, GG_DEG, GG_DEGOP, NEO_TRASF, COD_PAT1, PESO_...
 lgl   (1): patol6
 date  (2): dt_nasc, dt_decesso
 
@@ -12117,8 +12117,8 @@ date  (2): dt_nasc, dt_decesso
 
 > surgery_rules <- read_csv2(paste0(tableDir, "/surgery_rules.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing surgery_rules.csv [=====================================================================================] 29.99GB/s, eta:  0s                                                                                                                                      Rows: 2560 Columns: 5
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing surgery_rules.csv [=================================================] 33.99GB/s, eta:  0s                                                                                                  Rows: 2560 Columns: 5
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (4): lab_pat, DescrIntervento, CodInterv, Filler
 dbl (1): Icd
@@ -12144,7 +12144,7 @@ dbl (1): Icd
 2205  335 
 
 > write_csv2(sdo_stage_4_nominors_export, file=paste0(exportDir, "/sdo_stage_4_validated_1_export.csv"))
-wrote 5.96kB in  0s, 657.84MB/s                                                                                                                                    wrote 1.00TB in  0s, 34.44TB/s                                                                                                                                    Warning message:
+wrote 5.96kB in  0s, 999.92MB/s                                                                                                wrote 1.00TB in  0s, 46.98TB/s                                                                                                Warning message:
 One or more parsing issues, call `problems()` on your data frame for details, e.g.:
   dat <- vroom(...)
   problems(dat) 
@@ -12403,8 +12403,8 @@ One or more parsing issues, call `problems()` on your data frame for details, e.
 
 > valid_default<- read_csv2(paste0(tableDir, "/valid_default.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing valid_default.csv [=====================================================================================] 96.30MB/s, eta:  0s                                                                                                                                      Rows: 33 Columns: 2
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing valid_default.csv [=================================================] 83.25MB/s, eta:  0s                                                                                                  Rows: 33 Columns: 2
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (2): ICD9, Patologia
 
@@ -12430,7 +12430,7 @@ chr (2): ICD9, Patologia
 
 > # ESPORTAZIONE DEL DATASET AGGIORNATO ----
 > write_csv2(sdo_stage_5_validated, paste0(exportDir, "/sdo_stage_5_validated_2_export.csv"))
-wrote 5.79kB in  0s, 735.78MB/s                                                                                                                                    wrote 1.00TB in  0s, 30.85TB/s                                                                                                                                    [1] "STAGE 5 END"
+wrote 5.79kB in  0s, 971.23MB/s                                                                                                wrote 1.00TB in  0s, 45.76TB/s                                                                                                [1] "STAGE 5 END"
 [1] "STAGE 6 START"
 
 > # =====================================================================
@@ -12685,15 +12685,15 @@ chr (2): ICD9, Patologia
 
 > sdo_stage_5_validated <- read_csv2(sdo_stage_5_validated_file, locale = locale(encoding = "UTF-8"), col_types = cols(validation_type = col_character .... [TRUNCATED] 
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_5_validated_2_export.csv [====================================================================] 61.52GB/s, eta:  0s                                                                                                                                      
+gindexing sdo_stage_5_validated_2_export.csv [================================] 69.83GB/s, eta:  0s                                                                                                  
 > cedap_plus_2023 <- read_csv2(cedap_plus_2023_file, locale = locale(encoding = "UTF-8"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing cedap_plus_2023.csv [==============================----------------------------------------------------] 144.09GB/s, eta:  0sindexing cedap_plus_2023.csv [==================================================================================] 387.16MB/s, eta:  0s                                                                                                                                      Rows: 29784 Columns: 64
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing cedap_plus_2023.csv [========================----------------------] 240.77GB/s, eta:  0sindexing cedap_plus_2023.csv [==============================================] 726.83MB/s, eta:  0s                                                                                                  Rows: 29784 Columns: 64
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_nas_m, dt_parto, CARIOTIPO_DEL_NATO
-dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_femmine, nati_maschi, riscontro_autopti...
-lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRAVIDANZA_1, MALATTIE_INSORTE_IN_GRAVI...
+chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_na...
+dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_fem...
+lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRA...
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
@@ -12716,7 +12716,7 @@ lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_
 
 > # SALVATAGGIO OUTPUT ----
 > write_csv2(sdo_stage_6_validated, file = paste0(exportDir, "/sdo_stage_6_validated_3_export.csv"))
-wrote 5.63kB in  0s, 694.65MB/s                                                                                                                                    wrote 1.00TB in  0s, 34.42TB/s                                                                                                                                    Warning message:
+wrote 5.63kB in  0s, 694.65MB/s                                                                                                wrote 1.00TB in  0s, 44.96TB/s                                                                                                Warning message:
 One or more parsing issues, call `problems()` on your data frame for details, e.g.:
   dat <- vroom(...)
   problems(dat) 
@@ -12975,8 +12975,8 @@ One or more parsing issues, call `problems()` on your data frame for details, e.
 
 > minor_codes <- read_csv2(paste0(tableDir, "/minor_codes.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing minor_codes.csv [======================================================================================] 183.73MB/s, eta:  0s                                                                                                                                      Rows: 61 Columns: 2
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing minor_codes.csv [==================================================] 259.76MB/s, eta:  0s                                                                                                  Rows: 61 Columns: 2
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (1): Patologia
 dbl (1): ICD9
@@ -12986,11 +12986,11 @@ dbl (1): ICD9
 
 > sdo_stage_6 <- read_csv2(paste0(exportDir, "/sdo_stage_6_validated_3_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_6_validated_3_export.csv [====================================================================] 66.06GB/s, eta:  0s                                                                                                                                      Rows: 2540 Columns: 52
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_6_validated_3_export.csv [================================] 31.77GB/s, eta:  0s                                                                                                  Rows: 2540 Columns: 52
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr   (6): dt_amm, dt_dim, TIPO_DRG, SEX, ospedale, validation_type
-dbl  (43): COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DISD, DRG_RG, ETA, ETA_GG, GG_DEG, GG_DEGOP, MOD_DIM,...
+dbl  (43): COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DISD, DRG_RG, ETA...
 lgl   (1): patol6
 date  (2): dt_nasc, dt_decesso
 
@@ -13005,12 +13005,14 @@ date  (2): dt_nasc, dt_decesso
 
 > table(sdo_stage_7$validation_type)
 
-      0       1     1|2   1|2|3 1|2|3|4   1|2|4     1|3   1|3|4     1|4       2     2|3   2|3|4     2|4       3     3|4       4 
-   1445     108      13       2      10      56       4       6     136     263      16      26      91      24      25     315 
+      0       1     1|2   1|2|3 1|2|3|4   1|2|4     1|3   1|3|4     1|4       2     2|3   2|3|4 
+   1445     108      13       2      10      56       4       6     136     263      16      26 
+    2|4       3     3|4       4 
+     91      24      25     315 
 
 > # SALVARE IL FILE RISULTANTE ----
 > write_csv2(sdo_stage_7, file = paste0(exportDir, "/sdo_stage_7_validated_4_export.csv"))
-wrote 5.65kB in  0s, 790.07MB/s                                                                                                                                    wrote 1.00TB in  0s, 26.90TB/s                                                                                                                                    [1] "STAGE 7 END"
+wrote 5.65kB in  0s, 817.31MB/s                                                                                                wrote 1.00TB in  0s, 41.35TB/s                                                                                                [1] "STAGE 7 END"
 [1] "STAGE 8 START"
 
 > # =====================================================================
@@ -13266,11 +13268,11 @@ date  (2): dt_nasc, dt_decesso
 > 
 > sdo_stage7 <- read_csv2(paste0(exportDir, "/sdo_stage_7_validated_4_export.csv"), locale = locale(encoding = "UTF-8 ..." ... [TRUNCATED] 
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_7_validated_4_export.csv [====================================================================] 39.89GB/s, eta:  0s                                                                                                                                      Rows: 2540 Columns: 52
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_7_validated_4_export.csv [================================] 76.15GB/s, eta:  0s                                                                                                  Rows: 2540 Columns: 52
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr   (6): dt_amm, dt_dim, TIPO_DRG, SEX, ospedale, validation_type
-dbl  (43): COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DISD, DRG_RG, ETA, ETA_GG, GG_DEG, GG_DEGOP, MOD_DIM,...
+dbl  (43): COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DISD, DRG_RG, ETA...
 lgl   (1): patol6
 date  (2): dt_nasc, dt_decesso
 
@@ -13279,20 +13281,20 @@ date  (2): dt_nasc, dt_decesso
 
 > cedap_plus_2023 <- read_csv2(paste0(cedapDir, "/cedap_plus_2023.csv"),locale = locale(encoding = "UTF-8"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing cedap_plus_2023.csv [==========================================----------------------------------------] 234.39GB/s, eta:  0sindexing cedap_plus_2023.csv [==================================================================================] 473.83MB/s, eta:  0s                                                                                                                                      Rows: 29784 Columns: 64
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing cedap_plus_2023.csv [=====================================---------] 127.31GB/s, eta:  0sindexing cedap_plus_2023.csv [================================================] 1.60GB/s, eta:  0s                                                                                                  Rows: 29784 Columns: 64
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_nas_m, dt_parto, CARIOTIPO_DEL_NATO
-dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_femmine, nati_maschi, riscontro_autopti...
-lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRAVIDANZA_1, MALATTIE_INSORTE_IN_GRAVI...
+chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_na...
+dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_fem...
+lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRA...
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 > INeS_circonferenza_cranica <- read_csv2(paste0(tableDir, "/INeS_circonferenza_cranica.csv"), locale = locale(encoding = "UTF-8"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing INeS_circonferenza_cranica.csv [=======================================================================] 103.36MB/s, eta:  0s                                                                                                                                      Rows: 80 Columns: 6
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing INeS_circonferenza_cranica.csv [===================================] 173.64MB/s, eta:  0s                                                                                                  Rows: 80 Columns: 6
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (2): sesso, primogenito
 dbl (4): EG, L, M, S
@@ -13302,8 +13304,8 @@ dbl (4): EG, L, M, S
 
 > filter <- read_csv2(paste0(tableDir, "/filter.csv"), locale = locale(encoding = "UTF-8"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing filter.csv [===========================================================================================] 437.19MB/s, eta:  0s                                                                                                                                      Rows: 114 Columns: 6
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing filter.csv [=======================================================] 530.88MB/s, eta:  0s                                                                                                  Rows: 114 Columns: 6
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (1): Patologia
 dbl (5): ICD9, eg, ricgg, isolata, sds
@@ -13608,9 +13610,9 @@ dbl (5): ICD9, eg, ricgg, isolata, sds
 > #   violazione_filtro == TRUE & 
 > #     !is.na(sds_cc) & 
 > #     sds_cc < SDS_circonferenza_c .... [TRUNCATED] 
-wrote 3.09kB in  0s, 340.73MB/s                                                                                                                                    wrote 1.00TB in  0s, 42.66TB/s                                                                                                                                    
+wrote 3.09kB in  0s, 380.82MB/s                                                                                                wrote 1.00TB in  0s, 56.62TB/s                                                                                                
 > retained <- sdo_stage8 |> filter(violazione_filtro == F) |> write_csv2(file = paste0(exportDir, "/sdo_stage_8_validated_filters_export.csv"))
-wrote 3.09kB in  0s, 308.08MB/s                                                                                                                                    wrote 1.00TB in  0s, 29.20TB/s                                                                                                                                    Warning message:
+wrote 3.09kB in  0s, 90.49MB/swrote 1.00TB in  0s, 35.38TB/s                                                                                                Warning message:
 One or more parsing issues, call `problems()` on your data frame for details, e.g.:
   dat <- vroom(...)
   problems(dat) 
@@ -13646,14 +13648,20 @@ One or more parsing issues, call `problems()` on your data frame for details, e.
 > # OUT ----
 > 
 > write_csv2(sdo_stage8_wscore, file = paste0(exportDir, "/sdo_stage_8_validated_score_export.csv"))
-wrote 3.20kB in  0s, 406.85MB/s                                                                                                                                    wrote 1.00TB in  0s, 49.46TB/s                                                                                                                                    
+wrote 3.20kB in  0s, 353.31MB/s                                                                                                wrote 1.00TB in  0s, 76.15TB/s                                                                                                
 > write_csv2(sdo_stage8_wscore_nvalid, file = paste0(exportDir, "/sdo_stage_8_nvalidated_score_export.csv"))
-wrote 3.20kB in  0s, 291.87MB/s                                                                                                                                    wrote 1.00TB in  0s, 38.88TB/s                                                                                                                                    
+wrote 3.20kB in  0s, 189.10MB/s                                                                                                wrote 1.00TB in  0s, 56.32TB/s                                                                                                
 > write_csv2(sdo_stage8_wscore_top_rank, file = paste0(exportDir, "/sdo_stage_8_validated_top_ranked_export.csv"))
-wrote 3.20kB in  0s, 291.87MB/s                                                                                                                                    wrote 1.00TB in  0s, 34.10TB/s                                                                                                                                    
+wrote 3.20kB in  0s, 291.87MB/s                                                                                                wrote 1.00TB in  0s, 77.68TB/s                                                                                                
 > write_csv2(sdo_stage8_wscore_low_rank, file = paste0(exportDir, "/sdo_stage_8_validated_low_ranked_export.csv"))
-wrote 3.36kB in  0s, 175.95MB/swrote 1.00TB in  0s, 628.08TB/s                                                                                                                                    
+wrote 3.36kB in  0s, 563.04MB/s                                                                                                wrote 1.00TB in  0s, 2.02PB/s                                                                                                
 > write.csv2(ft, file = paste0(exportDir, "/scores.table_export.csv"), row.names = T)
+Warning message:
+The `x` argument of `as_tibble.matrix()` must have unique column names if `.name_repair` is
+omitted as of tibble 2.0.0.
+ℹ Using compatibility `.name_repair`.
+This warning is displayed once per session.
+Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated. 
 [1] "SCORE OK"
 [1] "STAGE 8 END"
 [1] "STAGE 9 START"
@@ -13909,11 +13917,11 @@ One or more parsing issues, call `problems()` on your data frame for details, e.
 > 
 > sdo_stage8 <- read_csv2(paste0(exportDir, "/sdo_stage_8_validated_score_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_8_validated_score_export.csv [================================================================] 22.65GB/s, eta:  0s                                                                                                                                      Rows: 715 Columns: 59
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_8_validated_score_export.csv [============================] 23.26GB/s, eta:  0s                                                                                                  Rows: 715 Columns: 59
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr   (8): dt_amm, dt_dim, TIPO_DRG, SEX, ospedale, validation_type, CONCEPIMENTI_PRECEDENTI, malformazione_tipo
-dbl  (47): cedap_linked, COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DISD, DRG_RG, ETA, ETA_GG, GG_DEG, GG_D...
+chr   (8): dt_amm, dt_dim, TIPO_DRG, SEX, ospedale, validation_type, CONCEPIMENTI_PRECEDENTI, ...
+dbl  (47): cedap_linked, COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DIS...
 lgl   (2): patol6, violazione_filtro
 date  (2): dt_nasc, dt_decesso
 
@@ -13942,11 +13950,11 @@ date  (2): dt_nasc, dt_decesso
 > # OUT ----
 > 
 > sdo_stage9_unique <- sdo_stage8 |> filter(!(PROG_PAZ %in% dupProgPaz$PROG_PAZ)) |> write_csv2(file=paste0(exportDir, "/sdo_stage_9_v ..." ... [TRUNCATED] 
-wrote 3.16kB in  0s, 401.26MB/swrote 1.00TB in  0s, 101.69TB/s                                                                                                                                    
+wrote 3.16kB in  0s, 228.30MB/swrote 1.00TB in  0s, 110.54TB/s                                                                                                
 > write_csv2(sdo_stage9_collapsed, file=paste0(exportDir, "/sdo_stage_9_validated_collapsed_export.csv"))
-wrote 9.01kB in  0s, 1.45GB/swrote 1.00TB in  0s, 491.83TB/s                                                                                                                                    
+wrote 9.01kB in  0s, 200.04MB/swrote 1.00TB in  0s, 469.90TB/s                                                                                                
 > sdo_stage9_dup_review <- sdo_stage8 |> filter(PROG_PAZ %in% dupProgPaz$PROG_PAZ) |> write_csv2(file=paste0(exportDir, "/sdo_stage_9_validated_dup_re ..." ... [TRUNCATED] 
-wrote 3.14kB in  0s, 346.91MB/swrote 1.00TB in  0s, 167.85TB/s                                                                                                                                    [1] "STAGE 9 END"
+wrote 3.14kB in  0s, 209.25MB/swrote 1.00TB in  0s, 186.18TB/s                                                                                                [1] "STAGE 9 END"
 [1] "STAGE 10 START"
 
 > # =====================================================================
@@ -14200,10 +14208,10 @@ date  (2): dt_nasc, dt_decesso
 > 
 > sdo_stage9_collapsed <- read_csv2(paste0(exportDir, "/sdo_stage_9_validated_collapsed_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_9_validated_collapsed_export.csv [=============================================================] 6.55GB/s, eta:  0s                                                                                                                                      Rows: 106 Columns: 59
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_9_validated_collapsed_export.csv [========================] 10.39GB/s, eta:  0s                                                                                                  Rows: 106 Columns: 59
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr (52): cedap_linked, COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, dt_amm, dt_dim, COD_DISD, DRG_RG, TIPO_DRG, ...
+chr (52): cedap_linked, COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, dt_amm, ...
 dbl  (7): COD_PAT1, patol2, patol3, patol4, patol5, patol6, sds_cc
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
@@ -14211,11 +14219,11 @@ dbl  (7): COD_PAT1, patol2, patol3, patol4, patol5, patol6, sds_cc
 
 > sdo_stage9_unique <- read_csv2(paste0(exportDir, "/sdo_stage_9_validated_unique_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_9_validated_unique_export.csv [===============================================================] 11.28GB/s, eta:  0s                                                                                                                                      Rows: 445 Columns: 59
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage_9_validated_unique_export.csv [===========================] 13.66GB/s, eta:  0s                                                                                                  Rows: 445 Columns: 59
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr   (8): dt_amm, dt_dim, TIPO_DRG, SEX, ospedale, validation_type, CONCEPIMENTI_PRECEDENTI, malformazione_tipo
-dbl  (46): cedap_linked, COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DISD, DRG_RG, ETA, ETA_GG, GG_DEG, GG_D...
+chr   (8): dt_amm, dt_dim, TIPO_DRG, SEX, ospedale, validation_type, CONCEPIMENTI_PRECEDENTI, ...
+dbl  (46): cedap_linked, COD_RG, COD_PRES, AA_SDO, PROG_SDO, AA_DIM, COD_AZI, COM_RES, COD_DIS...
 lgl   (3): patol5, patol6, violazione_filtro
 date  (2): dt_nasc, dt_decesso
 
@@ -14224,20 +14232,20 @@ date  (2): dt_nasc, dt_decesso
 
 > cedap_plus_2023 <- read_csv2(paste0(cedapDir, "/", cedapFileName))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing cedap_plus_2023.csv [====================================----------------------------------------------] 176.12GB/s, eta:  0sindexing cedap_plus_2023.csv [==================================================================================] 509.59MB/s, eta:  0s                                                                                                                                      Rows: 29784 Columns: 64
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing cedap_plus_2023.csv [===============================---------------] 272.74GB/s, eta:  0sindexing cedap_plus_2023.csv [================================================] 1.18GB/s, eta:  0s                                                                                                  Rows: 29784 Columns: 64
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_nas_m, dt_parto, CARIOTIPO_DEL_NATO
-dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_femmine, nati_maschi, riscontro_autopti...
-lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRAVIDANZA_1, MALATTIE_INSORTE_IN_GRAVI...
+chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_na...
+dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_fem...
+lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRA...
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 > data_structure <- read_csv2(paste0(tableDir, "/sdo_cedap_dd.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_cedap_dd.csv [=====================================================================================] 465.29MB/s, eta:  0s                                                                                                                                      Rows: 101 Columns: 7
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_cedap_dd.csv [=================================================] 648.59MB/s, eta:  0s                                                                                                  Rows: 101 Columns: 7
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (5): Variabile SDO, Variabile CedAP, Tracciato, Origine, data_type
 dbl (2): ID, clean
@@ -14295,112 +14303,112 @@ dbl (2): ID, clean
 > righe_filtrate_sds_da_escludere <- righe_sotto_cutoff[, colonne_da_mostrare, drop = FALSE]
 
 > print(righe_filtrate_sds_da_escludere)
-      PROG_PAZ COD_PAT1 patol2 patol3 patol4 patol5 patol6 interv1 interv2 interv3 interv4 interv5 interv6 interv7 interv8 interv9
-NA          NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.1        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.2        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.3        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.4        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.5        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.6        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.7        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.8        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.9        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.10       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.11       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.12       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.13       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.14       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.15       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.16       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.17       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.18       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.19       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.20       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.21       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.22       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.23       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.24       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.25       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.26       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.27       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.28       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.29       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.30       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.31       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.32       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.33       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.34       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.35       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.36       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.37       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.38       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.39       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.40       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.41       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.42       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.43       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.44       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.45       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.46       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.47       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.48       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.49       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.50       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-NA.51       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>    <NA>
-      interv10 interv11 sds_cc
-NA        <NA>     <NA>     NA
-NA.1      <NA>     <NA>     NA
-NA.2      <NA>     <NA>     NA
-NA.3      <NA>     <NA>     NA
-NA.4      <NA>     <NA>     NA
-NA.5      <NA>     <NA>     NA
-NA.6      <NA>     <NA>     NA
-NA.7      <NA>     <NA>     NA
-NA.8      <NA>     <NA>     NA
-NA.9      <NA>     <NA>     NA
-NA.10     <NA>     <NA>     NA
-NA.11     <NA>     <NA>     NA
-NA.12     <NA>     <NA>     NA
-NA.13     <NA>     <NA>     NA
-NA.14     <NA>     <NA>     NA
-NA.15     <NA>     <NA>     NA
-NA.16     <NA>     <NA>     NA
-NA.17     <NA>     <NA>     NA
-NA.18     <NA>     <NA>     NA
-NA.19     <NA>     <NA>     NA
-NA.20     <NA>     <NA>     NA
-NA.21     <NA>     <NA>     NA
-NA.22     <NA>     <NA>     NA
-NA.23     <NA>     <NA>     NA
-NA.24     <NA>     <NA>     NA
-NA.25     <NA>     <NA>     NA
-NA.26     <NA>     <NA>     NA
-NA.27     <NA>     <NA>     NA
-NA.28     <NA>     <NA>     NA
-NA.29     <NA>     <NA>     NA
-NA.30     <NA>     <NA>     NA
-NA.31     <NA>     <NA>     NA
-NA.32     <NA>     <NA>     NA
-NA.33     <NA>     <NA>     NA
-NA.34     <NA>     <NA>     NA
-NA.35     <NA>     <NA>     NA
-NA.36     <NA>     <NA>     NA
-NA.37     <NA>     <NA>     NA
-NA.38     <NA>     <NA>     NA
-NA.39     <NA>     <NA>     NA
-NA.40     <NA>     <NA>     NA
-NA.41     <NA>     <NA>     NA
-NA.42     <NA>     <NA>     NA
-NA.43     <NA>     <NA>     NA
-NA.44     <NA>     <NA>     NA
-NA.45     <NA>     <NA>     NA
-NA.46     <NA>     <NA>     NA
-NA.47     <NA>     <NA>     NA
-NA.48     <NA>     <NA>     NA
-NA.49     <NA>     <NA>     NA
-NA.50     <NA>     <NA>     NA
-NA.51     <NA>     <NA>     NA
+      PROG_PAZ COD_PAT1 patol2 patol3 patol4 patol5 patol6 interv1 interv2 interv3 interv4
+NA          NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.1        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.2        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.3        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.4        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.5        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.6        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.7        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.8        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.9        NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.10       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.11       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.12       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.13       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.14       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.15       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.16       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.17       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.18       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.19       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.20       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.21       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.22       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.23       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.24       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.25       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.26       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.27       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.28       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.29       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.30       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.31       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.32       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.33       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.34       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.35       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.36       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.37       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.38       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.39       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.40       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.41       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.42       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.43       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.44       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.45       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.46       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.47       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.48       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.49       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.50       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+NA.51       NA       NA     NA     NA     NA     NA     NA    <NA>    <NA>    <NA>    <NA>
+      interv5 interv6 interv7 interv8 interv9 interv10 interv11 sds_cc
+NA       <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.1     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.2     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.3     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.4     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.5     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.6     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.7     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.8     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.9     <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.10    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.11    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.12    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.13    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.14    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.15    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.16    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.17    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.18    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.19    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.20    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.21    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.22    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.23    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.24    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.25    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.26    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.27    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.28    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.29    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.30    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.31    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.32    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.33    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.34    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.35    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.36    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.37    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.38    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.39    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.40    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.41    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.42    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.43    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.44    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.45    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.46    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.47    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.48    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.49    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.50    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
+NA.51    <NA>    <NA>    <NA>    <NA>    <NA>     <NA>     <NA>     NA
  [ reached 'max' / getOption("max.print") -- omitted 42 rows ]
 
 > # OUT ----
@@ -14410,7 +14418,7 @@ NA.51     <NA>     <NA>     NA
 > sdo_stage10_cedap_combined$dt_nas_m <- format(sdo_stage10_cedap_combined$dt_nas_m, "%Y-%m-%d")
 
 > write_csv2(sdo_stage10_cedap_combined, paste0(exportDir, "/sdo_stage10_cedap_combined_export.csv"))
-wrote 4.74kB in  0s, 432.20MB/s                                                                                                                                    wrote 1.00TB in  0s, 73.05TB/s                                                                                                                                    Warning messages:
+wrote 4.74kB in  0s, 296.73MB/s                                                                                                wrote 1.00TB in  0s, 85.48TB/s                                                                                                Warning messages:
 1: One or more parsing issues, call `problems()` on your data frame for details, e.g.:
   dat <- vroom(...)
   problems(dat) 
@@ -14669,17 +14677,17 @@ NA.51     <NA>     <NA>     NA
 > # LOAD DATA ----
 > 
 > icd_conversion_table <- read_excel(paste0(tableDir,"/icd_conversion_table.xlsx"))
--/                                                                                                                                    /                                                                                                                                    -                                                                                                                                    
+-/                                                                                                /                                                                                                -                                                                                                
 > surgery <- read_excel(paste0(tableDir, "/surgery.xlsx"))
--/                                                                                                                                    /                                                                                                                                    -                                                                                                                                    
+-/                                                                                                /                                                                                                -                                                                                                
 > sdo_stage10_cedap_combined <- read_csv2(paste0(exportDir, "/sdo_stage10_cedap_combined_export.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage10_cedap_combined_export.csv [=================================================================] 21.31GB/s, eta:  0s                                                                                                                                      Rows: 551 Columns: 101
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_stage10_cedap_combined_export.csv [=============================] 32.28GB/s, eta:  0s                                                                                                  Rows: 551 Columns: 101
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (41): COD_PRES, PROG_SDO, AA_DIM, COD_AZI, COD_DISD, DRG_RG, TIPO_DRG, ETA, ETA_GG, GG_DEG, GG_DEGOP, MOD_DIM, MPR, NEO_TRASF...
-dbl  (50): cedap_linked, COD_RG, AA_SDO, COM_RES, COD_PAT1, FLAG_PAT, PROV_RES, RG_RES, PROG_PAZ, patol2, patol3, patol4, patol5, ...
-lgl   (5): riscontro_autoptico, ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRAVIDANZA_1, MAL...
+chr  (41): COD_PRES, PROG_SDO, AA_DIM, COD_AZI, COD_DISD, DRG_RG, TIPO_DRG, ETA, ETA_GG, GG_DE...
+dbl  (50): cedap_linked, COD_RG, AA_SDO, COM_RES, COD_PAT1, FLAG_PAT, PROV_RES, RG_RES, PROG_P...
+lgl   (5): riscontro_autoptico, ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, M...
 date  (5): dt_amm, dt_dim, dt_nasc, dt_decesso, dt_nas_m
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
@@ -14687,8 +14695,8 @@ date  (5): dt_amm, dt_dim, dt_nasc, dt_decesso, dt_nas_m
 
 > extra_codes <- read_csv2(paste0(tableDir,"/extra_codes.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing extra_codes.csv [======================================================================================] 275.46MB/s, eta:  0s                                                                                                                                      Rows: 72 Columns: 3
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing extra_codes.csv [==================================================] 301.69MB/s, eta:  0s                                                                                                  Rows: 72 Columns: 3
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (2): ICD9, Descrizione
 dbl (1): ICD9Co
@@ -14734,7 +14742,7 @@ dbl (1): ICD9Co
 
 > # OUT ----
 > write_csv2(sdo_stage10_cedap_combined, paste0(exportDir, "/sdo_stage11_cedap_with_labels_export.csv"))
-wrote 7.38kB in  0s, 910.90MB/s                                                                                                                                    wrote 1.00TB in  0s, 81.55TB/s                                                                                                                                    [1] "STAGE 11 END"
+wrote 7.38kB in  0s, 607.27MB/s                                                                                                wrote 1.00TB in  0s, 80.97TB/s                                                                                                [1] "STAGE 11 END"
 [1] "STAGE 12 START"
 
 > # ======================================================================
@@ -14987,20 +14995,20 @@ dbl (1): ICD9Co
 > # LOAD DATA ----
 > input_df <- read_csv2(paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"), col_types = cols(PROG_PAZ = col_character()))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_stage_11b_clinical_rev_export.csv [=================================================================] 40.28GB/s, eta:  0s                                                                                                                                      
+gindexing sdo_stage_11b_clinical_rev_export.csv [=============================] 54.06GB/s, eta:  0s                                                                                                  
 > input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"),col_types = cols(PROG_PAZ = col_character()))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexed 0B in  0s, 0B/sindexed 1.00TB in  0s, 210.12TB/s                                                                                                                                    
+gindexed 0B in  0s, 0B/sindexed 1.00TB in  0s, 155.30TB/s                                                                                                
 > revcode_subset <- input_df_revcode[, c(patology_code_cols_icd10, patology_label_cols_icd9, intervention_label_cols, "revcode")]
 
 > eurocat_data_dict <- read_excel(paste0(tableDir,"/eurocat_data_dict.xlsx"))
--/                                                                                                                                    /                                                                                                                                    -                                                                                                                                    
+-/                                                                                                /                                                                                                -                                                                                                
 > final_mapping <- read_csv2(paste0(tableDir, "/final_mapping.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing final_mapping.csv [=====================================================================================] 44.37GB/s, eta:  0s                                                                                                                                      indexing final_mapping.csv [====================================================================================] 472.94MB/s, eta:  0s                                                                                                                                      Rows: 186 Columns: 8
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing final_mapping.csv [=================================================] 15.11GB/s, eta:  0s                                                                                                  indexing final_mapping.csv [================================================] 238.44MB/s, eta:  0s                                                                                                  Rows: 186 Columns: 8
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr (6): EUROCAT_VARIABLE, SDO_CEDAP_DD, NOTE, Origine, Codifica di destinazione, codifica di origine
+chr (6): EUROCAT_VARIABLE, SDO_CEDAP_DD, NOTE, Origine, Codifica di destinazione, codifica di ...
 dbl (2): RICODIFICARE, CALCOLARE
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
@@ -15008,20 +15016,20 @@ dbl (2): RICODIFICARE, CALCOLARE
 
 > cedap_plus_2023 <- read_csv2(paste0(cedapDir,"/",cedapFileName))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing cedap_plus_2023.csv [======================================--------------------------------------------] 213.00GB/s, eta:  0sindexing cedap_plus_2023.csv [==================================================================================] 355.80MB/s, eta:  0s                                                                                                                                      Rows: 29784 Columns: 64
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing cedap_plus_2023.csv [======================------------------------] 192.11GB/s, eta:  0sindexing cedap_plus_2023.csv [==============================================] 663.40MB/s, eta:  0s                                                                                                  Rows: 29784 Columns: 64
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
-chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_nas_m, dt_parto, CARIOTIPO_DEL_NATO
-dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_femmine, nati_maschi, riscontro_autopti...
-lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRAVIDANZA_1, MALATTIE_INSORTE_IN_GRAVI...
+chr  (9): COD_AZI, COD_STAB, COD_PRES, LINK, STATO_CIVILE_MADRE, comune_residenza_madre, dt_na...
+dbl (50): prog_paz_neo, SDO_NEO, PROG_SDO, prog_paz_m, Malformazione_diagnosticata_1, nati_fem...
+lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_INSORTE_IN_GRA...
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 > eurocat_sdo_mapping <- read_excel(paste0(tableDir, "/eurocat_sdo_mapping.xlsx"))
--/                                                                                                                                    /                                                                                                                                    -                                                                                                                                    
+-/                                                                                                /                                                                                                -                                                                                                
 > icd_conversion_table <- read_excel("tables/icd_conversion_table.xlsx")
--/                                                                                                                                    /                                                                                                                                    -                                                                                                                                    
+-/                                                                                                /                                                                                                -                                                                                                
 > # SOSTITUZIONE LABEL IN input_df
 > # all(input_df$PROG_PAZ == revcode_subset$PROG_PAZ)  # Deve restituire TRUE per essere sicuri che le righe siano  .... [TRUNCATED] 
 
@@ -15032,8 +15040,8 @@ lgl  (5): ALTRA_MALATTIA_DELLA_MADRE, MALATTIA_PRINCIPALE_DELLA_MADRE, MALATTIE_
 
 > sdo_cedap_dd <- read_csv2(paste0(tableDir, "/sdo_cedap_dd.csv"))
 G3;ℹ Using "','" as decimal and "'.'" as grouping mark. Use `read_delim()` for more control.
-gindexing sdo_cedap_dd.csv [=====================================================================================] 465.29MB/s, eta:  0s                                                                                                                                      Rows: 101 Columns: 7
-── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+gindexing sdo_cedap_dd.csv [=================================================] 509.61MB/s, eta:  0s                                                                                                  Rows: 101 Columns: 7
+── Column specification ──────────────────────────────────────────────────────────────────────────
 Delimiter: ";"
 chr (5): Variabile SDO, Variabile CedAP, Tracciato, Origine, data_type
 dbl (2): ID, clean
@@ -15173,10 +15181,8 @@ death_date = dt_decesso
 +              .... [TRUNCATED] 
 
 > # TYPE ----
-> dset$type <- recode(input_df$VITALITA,
-+                     `1` = 1,  # Live birth
-+                     `2` = 2,  # Stillbirth
-+     .... [TRUNCATED] 
+> # Copia i valori di VITALITA in type; ricodifica 1 e 9 in 1 e assegna 1 anche ai valori mancanti (NA),
+> # lasciando invariati tutti g .... [TRUNCATED] 
 
 > # consang ----
 > # CEDAP: 1-3 = gradi di consanguineità (fino al 6°), 0 = non consanguinei
@@ -15230,7 +15236,7 @@ death_date = dt_decesso
 > ricodifica_vars <- c("sex", "consang", "totpreg", "socm", "moanom", "faanom", 
 +                      "sibanom", "type", "whendisc", "assconcept", " ..." ... [TRUNCATED] 
 
-> # === 5. MAPPING CON RICALCOLO ===
+> # === 5. MAPPING CON RICALCOLO ===----
 > ricalcolo_vars <- final_mapping %>%
 +   filter(CALCOLARE == 1) %>%
 +   pull(EUROCAT_VARIABLE)
@@ -15274,12 +15280,11 @@ death_date = dt_decesso
 +   # Vivo oltre 7 .... [TRUNCATED] 
 
 > # condisc ----
-> # DA VERIFICARE
 > # Origine CEDAP: default implicito = '9' 
 > # Destinazione EUROCAT:
 > #   1 = Alive ,
 > #   2 = Dead,
-> #   9 = N .... [TRUNCATED] 
+> #   9 = Not known (default) .... [TRUNCATED] 
 
 > #firstpre ----
 > # DEFAULT NON NOTO
@@ -15362,15 +15367,18 @@ death_date = dt_decesso
 CODICI NON TROVATI IN SYNDROMES:
 
 > print(missing_codes)
-  [1] "Q2110" "Q02"   "Q899"  "Q372"  "Q674"  "Q210"  "Q791"  "Q249"  "Q2519" "Q623"  "Q3699" "Q142"  "Q600"  "Q6210" "Q250"  "Q369" 
- [17] "Q669"  "Q549"  "Q204"  "Q360"  "Q6212" "Q2128" "Q120"  "Q436"  "Q660"  "Q620"  "Q201"  "Q391"  "Q419"  "Q795"  "Q400"  "Q359" 
- [33] "Q621"  "Q234"  "Q650"  "D1810" "Q221"  "Q900"  "Q428"  "Q662"  "Q230"  "Q692"  "Q030"  "Q790"  "Q690"  "Q245"  "Q375"  "Q914" 
- [49] "Q8938" "Q638"  "Q699"  "Q203"  "Q643"  "Q057"  "Q898"  "Q243"  "Q651"  "Q213"  "E030"  "Q353"  "Q262"  "Q069"  "Q169"  "Q431" 
- [65] "Q232"  "D180"  "Q701"  "Q019"  "Q223"  "Q339"  "Q231"  "Q330"  "Q049"  "Q381"  "Q829"  "Q439"  "Q539"  "Q048"  "Q558"  "Q749" 
- [81] "Q913"  "Q257"  "Q150"  "Q052"  "Q641"  "Q618"  "Q658"  "Q254"  "Q200"  "Q220"  "P293"  "Q614"  "Q205"  "Q709"  "Q7640" "Q4338"
- [97] "Q938"  "Q2120" "Q628"  "Q430"  "Q676"  "Q652"  "Q039"  "Q184"  "Q351"  "Q224"  "P832"  "Q640"  "Q259"  "Q6448" "Q370"  "Q170" 
-[113] "Q242"  "Q610"  "Q233"  "Q799"  "Q248"  "Q760"  "Q268"  "Q890"  "Q278"  "Q265"  "P701"  "Q999"  "Q713"  "Q371"  "Q741"  "Q685" 
-[129] "Q160" 
+  [1] "Q2110" "Q02"   "Q899"  "Q372"  "Q674"  "Q210"  "Q791"  "Q249"  "Q2519" "Q623"  "Q3699"
+ [12] "Q142"  "Q600"  "Q6210" "Q250"  "Q369"  "Q669"  "Q549"  "Q204"  "Q360"  "Q6212" "Q2128"
+ [23] "Q120"  "Q436"  "Q660"  "Q620"  "Q201"  "Q391"  "Q419"  "Q795"  "Q400"  "Q359"  "Q621" 
+ [34] "Q234"  "Q650"  "D1810" "Q221"  "Q900"  "Q428"  "Q662"  "Q230"  "Q692"  "Q030"  "Q790" 
+ [45] "Q690"  "Q245"  "Q375"  "Q914"  "Q8938" "Q638"  "Q699"  "Q203"  "Q643"  "Q057"  "Q898" 
+ [56] "Q243"  "Q651"  "Q213"  "E030"  "Q353"  "Q262"  "Q069"  "Q169"  "Q431"  "Q232"  "D180" 
+ [67] "Q701"  "Q019"  "Q223"  "Q339"  "Q231"  "Q330"  "Q049"  "Q381"  "Q829"  "Q439"  "Q539" 
+ [78] "Q048"  "Q558"  "Q749"  "Q913"  "Q257"  "Q150"  "Q052"  "Q641"  "Q618"  "Q658"  "Q254" 
+ [89] "Q200"  "Q220"  "P293"  "Q614"  "Q205"  "Q709"  "Q7640" "Q4338" "Q938"  "Q2120" "Q628" 
+[100] "Q430"  "Q676"  "Q652"  "Q039"  "Q184"  "Q351"  "Q224"  "P832"  "Q640"  "Q259"  "Q6448"
+[111] "Q370"  "Q170"  "Q242"  "Q610"  "Q233"  "Q799"  "Q248"  "Q760"  "Q268"  "Q890"  "Q278" 
+[122] "Q265"  "P701"  "Q999"  "Q713"  "Q371"  "Q741"  "Q685"  "Q160" 
 
 > # ---- inizializza ----
 > n_sind_tot <- 0
@@ -15421,12 +15429,12 @@ Righe con buchi: 0
 > 
 > # conv_codes <- gsub("\\.", "", toupper(trimws(icd_conversion_table$ICD10) .... [TRUNCATED] 
 
-> #VARIABILI MANCANTI
+> #VARIABILI MANCANTI ----
 > 
 > 
 > # lista delle variabili EUROCAT con mapping diretto
 > direct_mapping_vars <- final_mapping %>%
-+   filter(RICODIFICARE = .... [TRUNCATED] 
++   filter(RICODIFIC .... [TRUNCATED] 
 
 > variabili_attese <- unique(c(ricodifica_vars, ricalcolo_vars, direct_mapping_vars))
 
@@ -15435,16 +15443,19 @@ Righe con buchi: 0
 > variabili_mancanti<- setdiff(variabili_mapping, variabili_attese)
 
 > print(variabili_mancanti)
- [1] "assoconcept"     "surgery"         "presyn"          "premal1"         "premal2"         "premal3"         "premal4"        
- [8] "premal5"         "premal6"         "premal7"         "premal8"         "syndrome"        "sp_syndrome"     "matdiab"        
-[15] "record_id"       "numloc"          "sp_twin"         "nbrmalf"         "extra_er_resmo"  "sp_firstpre"     "sp_gentest"     
-[22] "imer_key"        "omim"            "orpha"           "malfo7"          "sp_malfo7"       "malfo8"          "sp_malfo8"      
-[29] "occupmo"         "folic_g14"       "extra_drugs"     "firsttri"        "drugs1"          "sp_drugs"        "drugs2"         
-[36] "sp_drugs_2"      "drugs3"          "sp_drugs_3"      "drugs4"          "sp_drugs_4"      "drugs5"          "sp_drugs_5"     
-[43] "inf_cov_test"    "imm_cov_test"    "oth_cov_test"    "sp_oth_cov_test" "start_cov"       "cov_severity"    "sp_consang"     
-[50] "sp_sibanom"      "prevsib"         "sib1"            "sib2"            "sib3"            "sp_moanom"       "sp_faanom"      
-[57] "migrant"         "genrem"          "lung_neo"        "pre_sa"          "pre_topfa"       "pre_live"        "pre_still"      
-[64] "mo_alcohol"      "cedap_linked"   
+ [1] "assoconcept"     "surgery"         "presyn"          "premal1"         "premal2"        
+ [6] "premal3"         "premal4"         "premal5"         "premal6"         "premal7"        
+[11] "premal8"         "syndrome"        "sp_syndrome"     "matdiab"         "record_id"      
+[16] "numloc"          "sp_twin"         "nbrmalf"         "extra_er_resmo"  "sp_firstpre"    
+[21] "sp_gentest"      "imer_key"        "omim"            "orpha"           "malfo7"         
+[26] "sp_malfo7"       "malfo8"          "sp_malfo8"       "occupmo"         "folic_g14"      
+[31] "extra_drugs"     "firsttri"        "drugs1"          "sp_drugs"        "drugs2"         
+[36] "sp_drugs_2"      "drugs3"          "sp_drugs_3"      "drugs4"          "sp_drugs_4"     
+[41] "drugs5"          "sp_drugs_5"      "inf_cov_test"    "imm_cov_test"    "oth_cov_test"   
+[46] "sp_oth_cov_test" "start_cov"       "cov_severity"    "sp_consang"      "sp_sibanom"     
+[51] "prevsib"         "sib1"            "sib2"            "sib3"            "sp_moanom"      
+[56] "sp_faanom"       "migrant"         "genrem"          "lung_neo"        "pre_sa"         
+[61] "pre_topfa"       "pre_live"        "pre_still"       "mo_alcohol"      "cedap_linked"   
 
 > #Eliminare le righe revisionate con revcode=0----
 > 
@@ -15473,40 +15484,50 @@ Righe totali dopo il filtro: 428
 > sdo_stage12_transcode <- dset %>% filter(revcode != 0)
 
 > colSums(is.na(dset))
-      record_id          centre          numloc      birth_date      sdo_number      gestlength         nbrbaby         sp_twin 
-            428               0             428               0              57              48               0             428 
-        nbrmalf             sex            type          civreg          weight        survival      death_date   mocitizenship 
-            428               0              57              57             106               0               0              57 
-          resmo  extra_er_resmo          datemo           agemo             bmi         totpreg        whendisc         agedisc 
-              0             428              78              78              57              57               0             392 
-        condisc        firstpre     sp_firstpre           karyo        sp_cario         gentest      sp_gentest         surgery 
-              0               0             428               0             428               0             428             428 
-             pm          presyn         premal1         premal2         premal3         premal4         premal5         premal6 
-            428               0               0               0               0               0               0               0 
-        premal7         premal8        imer_key        syndrome     sp_syndrome            omim           orpha          malfo1 
-              0               0             428             406             406             428             428              17 
-      sp_malfo1          malfo2       sp_malfo2          malfo3       sp_malfo3          malfo4       sp_malfo4          malfo5 
-             17             316             316             388             388             411             411             420 
-      sp_malfo5          malfo6       sp_malfo6          malfo7       sp_malfo7          malfo8       sp_malfo8      assconcept 
-            420             424             424             428             428             428             428             419 
-          agefa            socf         occupmo         matdiab         illbef1         illbef2         illdur1         illdur2 
-             77               0             428             428             428             428             428             428 
-      folic_g14     extra_drugs        firsttri          drugs1        sp_drugs          drugs2      sp_drugs_2          drugs3 
-            428             428             428             428             428             428             428             428 
-     sp_drugs_3          drugs4      sp_drugs_4          drugs5      sp_drugs_5    inf_cov_test    imm_cov_test    oth_cov_test 
-            428             428             428             428             428             428             428             428 
-sp_oth_cov_test       start_cov    cov_severity         consang      sp_consang         sibanom      sp_sibanom         prevsib 
-            428             428             428             424             428             379             428             428 
-           sib1            sib2            sib3          moanom       sp_moanom          faanom       sp_faanom          matedu 
-            428             428             428             379             428             379             428              57 
-           socm         migrant          genrem        prog_paz   region_res_mo        cod_pres        lung_neo   circ_cran_neo 
-              0             428             428               0               0               0             428              57 
-         sds_cc          pre_sa       pre_topfa        pre_live       pre_still      mo_smoking      mo_alcohol          source 
-             57             428             428             428             428              77             428             428 
+      record_id          centre          numloc      birth_date      sdo_number      gestlength 
+            428               0             428               0              57              48 
+        nbrbaby         sp_twin         nbrmalf             sex            type          civreg 
+              0             428             428               0               0              57 
+         weight        survival      death_date   mocitizenship           resmo  extra_er_resmo 
+            106               0               0              57               0             428 
+         datemo           agemo             bmi         totpreg        whendisc         agedisc 
+             78              78              57              57               0             392 
+        condisc        firstpre     sp_firstpre           karyo        sp_cario         gentest 
+              0               0             428               0             428               0 
+     sp_gentest         surgery              pm          presyn         premal1         premal2 
+            428             428             428               0               0               0 
+        premal3         premal4         premal5         premal6         premal7         premal8 
+              0               0               0               0               0               0 
+       imer_key        syndrome     sp_syndrome            omim           orpha          malfo1 
+            428             406             406             428             428              17 
+      sp_malfo1          malfo2       sp_malfo2          malfo3       sp_malfo3          malfo4 
+             17             316             316             388             388             411 
+      sp_malfo4          malfo5       sp_malfo5          malfo6       sp_malfo6          malfo7 
+            411             420             420             424             424             428 
+      sp_malfo7          malfo8       sp_malfo8      assconcept           agefa            socf 
+            428             428             428             419              77               0 
+        occupmo         matdiab         illbef1         illbef2         illdur1         illdur2 
+            428             428             428             428             428             428 
+      folic_g14     extra_drugs        firsttri          drugs1        sp_drugs          drugs2 
+            428             428             428             428             428             428 
+     sp_drugs_2          drugs3      sp_drugs_3          drugs4      sp_drugs_4          drugs5 
+            428             428             428             428             428             428 
+     sp_drugs_5    inf_cov_test    imm_cov_test    oth_cov_test sp_oth_cov_test       start_cov 
+            428             428             428             428             428             428 
+   cov_severity         consang      sp_consang         sibanom      sp_sibanom         prevsib 
+            428             424             428             379             428             428 
+           sib1            sib2            sib3          moanom       sp_moanom          faanom 
+            428             428             428             379             428             379 
+      sp_faanom          matedu            socm         migrant          genrem        prog_paz 
+            428              57               0             428             428               0 
+  region_res_mo        cod_pres        lung_neo   circ_cran_neo          sds_cc          pre_sa 
+              0               0             428              57              57             428 
+      pre_topfa        pre_live       pre_still      mo_smoking      mo_alcohol          source 
+            428             428             428              77             428             428 
        sp_karyo    cedap_linked         revcode       NEO_TRASF 
             426               0               0               0 
 
-> # Sostituzione NA per variabili specifiche in dset ----
+> # LAVORO NA IN 9 O "" ----
 > 
 > # 1. Rimozione colonne non necessarie
 > dset$cov_severity <- NULL
@@ -15587,36 +15608,46 @@ sp_oth_cov_test       start_cov    cov_severity         consang      sp_consang 
 +   x_clean <- ifelse(t .... [TRUNCATED] 
 
 > colSums(is.na(dset))
-      record_id          centre          numloc      birth_date      sdo_number      gestlength         nbrbaby         sp_twin 
-              0               0               0               0               0              79               0               0 
-        nbrmalf             sex            type          civreg          weight        survival      death_date   mocitizenship 
-              0               0               0               0               0               0               0               0 
-          resmo  extra_er_resmo          datemo           agemo             bmi         totpreg        whendisc         agedisc 
-              0               0               0               0               0               0               0               0 
-        condisc        firstpre     sp_firstpre           karyo        sp_cario         gentest      sp_gentest         surgery 
-              0               0               0               0               0               0               0               0 
-             pm          presyn         premal1         premal2         premal3         premal4         premal5         premal6 
-              0               0               0               0               0               0               0               0 
-        premal7         premal8        imer_key        syndrome     sp_syndrome            omim           orpha          malfo1 
-              0               0               0               0               0               0               0               0 
-      sp_malfo1          malfo2       sp_malfo2          malfo3       sp_malfo3          malfo4       sp_malfo4          malfo5 
-              0               0               0               0               0               0               0               0 
-      sp_malfo5          malfo6       sp_malfo6          malfo7       sp_malfo7          malfo8       sp_malfo8      assconcept 
-              0               0               0               0             428               0             428               0 
-          agefa            socf         occupmo         matdiab         illbef1         illbef2         illdur1         illdur2 
-              0               0               0               0               0               0               0               0 
-      folic_g14     extra_drugs        firsttri          drugs1        sp_drugs          drugs2      sp_drugs_2          drugs3 
-              0               0               0               0               0               0               0               0 
-     sp_drugs_3          drugs4      sp_drugs_4          drugs5      sp_drugs_5    inf_cov_test    imm_cov_test    oth_cov_test 
-              0               0               0               0               0               0               0               0 
-sp_oth_cov_test         consang      sp_consang         sibanom      sp_sibanom         prevsib            sib1            sib2 
-              0               0               0               0               0               0               0               0 
-           sib3          moanom       sp_moanom          faanom       sp_faanom          matedu            socm         migrant 
-              0               0               0               0               0               0               0               0 
-         genrem        prog_paz   region_res_mo        cod_pres        lung_neo   circ_cran_neo          sds_cc          pre_sa 
-              0               0               0               0               0               0               0               0 
-      pre_topfa        pre_live       pre_still      mo_smoking      mo_alcohol          source        sp_karyo    cedap_linked 
-              0               0               0               0               0               0               0               0 
+      record_id          centre          numloc      birth_date      sdo_number      gestlength 
+              0               0               0               0               0              79 
+        nbrbaby         sp_twin         nbrmalf             sex            type          civreg 
+              0               0               0               0               0               0 
+         weight        survival      death_date   mocitizenship           resmo  extra_er_resmo 
+              0               0               0               0               0               0 
+         datemo           agemo             bmi         totpreg        whendisc         agedisc 
+              0               0               0               0               0               0 
+        condisc        firstpre     sp_firstpre           karyo        sp_cario         gentest 
+              0               0               0               0               0               0 
+     sp_gentest         surgery              pm          presyn         premal1         premal2 
+              0               0               0               0               0               0 
+        premal3         premal4         premal5         premal6         premal7         premal8 
+              0               0               0               0               0               0 
+       imer_key        syndrome     sp_syndrome            omim           orpha          malfo1 
+              0               0               0               0               0               0 
+      sp_malfo1          malfo2       sp_malfo2          malfo3       sp_malfo3          malfo4 
+              0               0               0               0               0               0 
+      sp_malfo4          malfo5       sp_malfo5          malfo6       sp_malfo6          malfo7 
+              0               0               0               0               0               0 
+      sp_malfo7          malfo8       sp_malfo8      assconcept           agefa            socf 
+            428               0             428               0               0               0 
+        occupmo         matdiab         illbef1         illbef2         illdur1         illdur2 
+              0               0               0               0               0               0 
+      folic_g14     extra_drugs        firsttri          drugs1        sp_drugs          drugs2 
+              0               0               0               0               0               0 
+     sp_drugs_2          drugs3      sp_drugs_3          drugs4      sp_drugs_4          drugs5 
+              0               0               0               0               0               0 
+     sp_drugs_5    inf_cov_test    imm_cov_test    oth_cov_test sp_oth_cov_test         consang 
+              0               0               0               0               0               0 
+     sp_consang         sibanom      sp_sibanom         prevsib            sib1            sib2 
+              0               0               0               0               0               0 
+           sib3          moanom       sp_moanom          faanom       sp_faanom          matedu 
+              0               0               0               0               0               0 
+           socm         migrant          genrem        prog_paz   region_res_mo        cod_pres 
+              0               0               0               0               0               0 
+       lung_neo   circ_cran_neo          sds_cc          pre_sa       pre_topfa        pre_live 
+              0               0               0               0               0               0 
+      pre_still      mo_smoking      mo_alcohol          source        sp_karyo    cedap_linked 
+              0               0               0               0               0               0 
         revcode       NEO_TRASF 
               0               0 
 
@@ -15678,8 +15709,12 @@ Variabili mancanti che verranno aggiunte:
 +   dset$datemo <- gsub("-", "/", dset$datemo)
 + }
 
-> write_csv2(dset, file = paste0(exportDir, "/sdo_stage12_transcode_export.csv"), na = "")
-wrote 4.08kB in  0s, 449.89MB/swrote 1.00TB in  0s, 103.83TB/s                                                                                                                                    Warning messages:
+> write_csv2(dset, file = paste0(exportDir, "/sdo_stage12_transcode_export.csv"))
+wrote 4.13kB in  0s, 596.75MB/swrote 1.00TB in  0s, 132.07TB/s                                                                                                
+> gitDir_templates <- file.path(Sys.getenv("HOME"), "Desktop", "git_hub", "SARA")
+
+> write_csv2(dset, file.path(gitDir_templates, "sdo_stage12_transcode_export.csv")) #path generalizzata <- config.R
+wrote 4.13kB in  0s, 524.42MB/swrote 1.00TB in  0s, 129.47TB/s                                                                                                Warning messages:
 1: One or more parsing issues, call `problems()` on your data frame for details, e.g.:
   dat <- vroom(...)
   problems(dat) 
