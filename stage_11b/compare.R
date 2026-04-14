@@ -50,7 +50,7 @@ for (col in patology_cols) {
   )
 }
 
-# Metodo PROG_PAZ per identificare record già presenti in REDCap ----
+# # Metodo PROG_PAZ per identificare record già presenti in REDCap ----
 
 # Step 1: Indici delle righe CedAP collegate a REDCap
 linked_indices <- redcapData_stage_1_1$cedap_linked
@@ -76,6 +76,13 @@ table(alreadyRecorded_PROG_PAZ)
 sdo_stage11_cedap_with_labels$revcode <- 9
 sdo_stage11_cedap_with_labels$note <- ""
 
+#test per revcode causale
+sdo_stage11_cedap_with_labels$revcode <- sample(
+  c(0,1,2),
+  nrow(sdo_stage11_cedap_with_labels),        #da commentare
+  replace = TRUE,
+  prob = c(0.7,0.2,0.1)
+)
 
 # Esporta dataset finale ----
 

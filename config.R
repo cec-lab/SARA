@@ -30,6 +30,7 @@ stage_8Dir=paste0(baseDir, "/stage_8")
 stage_9Dir=paste0(baseDir, "/stage_9")
 stage_10Dir=paste0(baseDir, "/stage_10")
 stage_11Dir=paste0(baseDir, "/stage_11")
+stage_11bDir=paste0(baseDir, "/stage_11b")
 stage_mapping=paste0(baseDir, "/mapping")
 stage_12Dir=paste0(baseDir, "/stage_12")
 

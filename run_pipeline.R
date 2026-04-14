@@ -104,6 +104,13 @@ print("STAGE 11 END")
 # print("MAPPING END")
 
 
+#Stage11B ----
+
+print("STAGE 11B START")
+source(paste0(stage_11bDir, "/compare.R"), echo = T)
+print("STAGE 11B END")
+
+
 #Stage12 ----
 
 print("STAGE 12 START")
