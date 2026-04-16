@@ -1,198 +1,193 @@
+rm(list = ls())
+
 baseDir=getwd()
 source(paste0(baseDir,"/config.R"), echo = TRUE)
 source(paste0(baseDir,"/functions.R"), echo = TRUE)
 
 
 eurocatData <- read.csv2(paste0(exportDir, "/eurocatData.csv"))
+eurocatData <- transcode_complete(eurocatData, eurocat_vars_list)
 icd_conversion_table <- read_excel("tables/icd_conversion_table.xlsx")
 syndromes <- read_delim("tables/syndromes.csv", delim = ";", trim_ws = TRUE)
 redcap_test_data <- read_delim("redcap_dataset/redcap_test_data.csv", 
                                delim = ";", escape_double = FALSE, trim_ws = TRUE)
-sdo_1yfup_2023 <- read_delim("sdo/sdo_1yfup_2023.csv", 
-                             delim = ";", escape_double = FALSE, trim_ws = TRUE)
+sdo_1yfup_2023 <- read_delim("stage_0/sdo_2023_all.csv", 
+                                            delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 #DARIO ----
 
 align_to_redcap <- function(df_sim, df_real){
   
-  # aggiunge colonne mancanti
   missing_cols <- setdiff(names(df_real), names(df_sim))
   
   for(v in missing_cols){
     df_sim[[v]] <- NA
   }
   
-  # tiene solo e nell'ordine corretto
   df_sim <- df_sim[, names(df_real)]
   
   return(df_sim)
 }
-generate_eurocat_test <- function(eurocatData, redcap_test_data, n = 1000, tolerance = 30){
+
+
+generate_eurocat_test <- function(eurocatData, redcap_test_data, n_sim = 1000){
   
-  # -------- SEED VARIABILE --------
   seed <- as.integer(Sys.time()) + sample.int(1e6,1)
   set.seed(seed)
   message("Seed usato: ", seed)
   
-  nn <- n
+  # ---------------- BASE ----------------
+  df <- redcap_test_data[rep(1, n_sim), ]
+  df[,] <- NA
   
-  # -------- BASE REALISTICA --------
-  # campiona dal reale → già struttura buona
-  df <- eurocatData[sample(1:nrow(eurocatData), nn, replace = TRUE), ]
-  
-  # -------- FUNZIONI --------
-  rand_choice <- function(values, probs = NULL){
-    sample(values, nn, TRUE, prob = probs)
+  # ---------------- DATE ----------------
+  rand_date <- function(){
+    as.Date("2000-01-01") + sample(0:9000, n_sim, TRUE)
   }
   
-  rand_date <- function(){
-    as.Date("2000-01-01") + sample(0:9000, nn, TRUE)
+  df$birth_date <- rand_date()
+  df$datemo     <- df$birth_date + sample(0:2, n_sim, TRUE)
+  df$agefa      <- rand_date()
+  
+  death_flag <- runif(n_sim) < 0.1
+  df$death_date <- as.Date(NA)
+  
+  idx_death <- which(death_flag)
+  if(length(idx_death) > 0){
+    df$death_date[idx_death] <- df$datemo[idx_death] +
+      sample(0:100, length(idx_death), TRUE)
   }
   
   # ---------------- ID ----------------
-  df$record_id <- paste0("ID", sample(100000:999999, nn, TRUE))
-  df$redcap_data_access_group <- sample(paste0("group", 1:14), nn, TRUE)
+  df$record_id <- paste0("ID", sample(100000:999999, n_sim, TRUE))
+  df$redcap_data_access_group <- sample(paste0("group", 1:14), n_sim, TRUE)
   df$centre <- 18
   
-  # ---------------- DATE ----------------
-  df$birth_date <- rand_date()
-  df$datemo <- rand_date()
-  df$death_date <- rand_date()
-  df$agefa <- rand_date()
+  # ---------------- NOMI ----------------
+  df$mother_name <- sample(
+    c("MARIA","ANNA","GIULIA","FRANCESCA","LAURA","CHIARA"),
+    n_sim, TRUE
+  )
   
-  # ---------------- DEMOGRAFIA ----------------
-  df$sex <- rand_choice(c(1,2,3), c(0.49,0.49,0.02))
-  df$civreg <- rand_choice(c(1,2,3), c(0.85,0.1,0.05))
-  df$mocitizenship <- sample(100:300, nn, TRUE)
-  df$resmo <- sprintf("%06d", sample(1:999999, nn, TRUE))
-  df$extra_er_resmo <- sample(c("ER1","ER2"), nn, TRUE)
+  df$mother_surname <- sample(
+    c("ROSSI","BIANCHI","VERDI","NERI","GIALLO","FERRARI","ESPOSITO"),
+    n_sim, TRUE
+  )
   
-  # ---------------- GRAVIDANZA ----------------
-  df$gestlength <- sample(20:42, nn, TRUE)
-  df$nbrbaby <- rand_choice(c(1,2,3), c(0.9,0.08,0.02))
+  # ---------------- ALTRE VAR (PRIMA) ----------------
   
-  df$sp_twin <- ifelse(df$nbrbaby > 1,
-                       sample(c("MCDA","DCDA"), nn, TRUE),
-                       "NO")
+  vars_protette_base <- c(
+    "record_id","redcap_data_access_group","centre",
+    "birth_date","datemo","death_date","agefa",
+    "mother_name","mother_surname"
+  )
   
-  df$nbrmalf <- ifelse(df$nbrbaby > 1,
-                       sample(c("1","2","3"), nn, TRUE),
-                       "0")
+  vars_other <- setdiff(names(df), vars_protette_base)
   
-  # ---------------- OUTCOME ----------------
-  df$type <- rand_choice(c(1,2,3,4), c(0.8,0.1,0.05,0.05))
-  df$survival <- rand_choice(c(1,2,3), c(0.7,0.2,0.1))
-  
-  # ---------------- CLINICO ----------------
-  df$weight <- sample(500:4500, nn, TRUE)
-  df$bmi <- sample(18:40, nn, TRUE)
-  df$totpreg <- sample(0:6, nn, TRUE)
-  
-  df$agedisc <- sample(c("20","22","25","30"), nn, TRUE)
-  df$sp_firstpre <- sample(c("info1","info2"), nn, TRUE)
-  df$sp_karyo <- sample(c("46XX","46XY"), nn, TRUE)
-  df$sp_gentest <- sample(c("array","NGS"), nn, TRUE)
-  
-  # ---------------- MALFORMAZIONI ----------------
-  for(i in 1:6){
+  for(v in vars_other){
     
-    keep <- runif(nn) < ifelse(i == 1, 0.85, 0.35)
+    if(!(v %in% names(eurocatData))) next
     
-    df[[paste0("malfo", i)]] <- ifelse(keep, sample(1:800, nn, TRUE), 0)
+    pool <- eurocatData[[v]]
+    pool_no_na <- pool[!is.na(pool)]
     
-    df[[paste0("premal", i)]] <- ifelse(keep, sample(c(1,2), nn, TRUE), 0)
+    if(length(pool_no_na) == 0) next
+    
+    df[[v]] <- sample(pool_no_na, n_sim, replace = TRUE)
   }
   
-  # ---------------- NOMI FAKE ----------------
-  df$mother_name <- sample(c("MARIA","ANNA","LUCA","GIULIA","MARCO"), nn, TRUE)
-  df$mother_surname <- sample(c("ROSSI","BIANCHI","VERDI","NERI","GIALLO"), nn, TRUE)
+  # ---------------- SDO NUMBER ----------------
   
-  # ---------------- ALIGN --------
-  df <- align_to_redcap(df, redcap_test_data)
-  
-  # ---------------- FILL REAL LEVELS --------
-  fill_from_real_levels <- function(df_sim, df_real){
+  if("sdo_number" %in% names(df)){
     
-    for(v in names(df_sim)){
-      
-      if(v %in% names(df_real)){
-        
-        real_values <- df_real[[v]]
-        real_values <- real_values[!is.na(real_values)]
-        
-        if(length(real_values) == 0) next
-        
-        na_idx <- which(is.na(df_sim[[v]]))
-        
-        if(length(na_idx) > 0){
-          df_sim[[v]][na_idx] <- sample(real_values, length(na_idx), TRUE)
-        }
-      }
+    pool <- eurocatData$sdo_number
+    pool <- pool[!is.na(pool) & pool != ""]
+    
+    df$sdo_number <- sample(pool, n_sim, replace = TRUE)
+  }
+  
+  # ---------------- BLOCCHI COERENTI (ULTIMO STEP 🔥) ----------------
+  
+  blocchi <- list(
+    
+    c("diagnosis_syndrome","presyn",
+      paste0("diagnosis_malformation_",1:8),
+      paste0("premal",1:8)),
+    
+    c(paste0("malfo",1:8),
+      paste0("malfo",1:8,"_desc_detail"),
+      paste0("sp_malfo",1:8)),
+    
+    c(paste0("drugs",1:5),
+      "sp_ifnotlisted_medication",
+      paste0("sp_ifnotlisted_medication_",2:5),
+      paste0("sp_drugs", c("", "_2","_3","_4","_5")))
+  )
+  
+  idx_blocco <- sample(1:nrow(redcap_test_data), n_sim, replace = TRUE)
+  
+  for(vars_blocco in blocchi){
+    
+    vars_blocco <- intersect(vars_blocco, names(redcap_test_data))
+    
+    df[, vars_blocco] <- redcap_test_data[idx_blocco, vars_blocco]
+  }
+  
+  # ---------------- NA REALISTICI ----------------
+  
+  na_prop <- colMeans(is.na(redcap_test_data))
+  
+  no_na_vars <- c(
+    "record_id","sdo_number","mother_name","mother_surname"
+  )
+  
+  for(v in names(df)){
+    
+    if(v %in% no_na_vars) next
+    if(!(v %in% names(na_prop))) next
+    
+    p <- na_prop[v]
+    if(p == 0) next
+    
+    n_na <- round(p * n_sim)
+    
+    if(n_na > 0){
+      idx_na <- sample(1:n_sim, n_na)
+      df[[v]][idx_na] <- NA
     }
-    
-    return(df_sim)
   }
   
-  df <- fill_from_real_levels(df, redcap_test_data)
+  # ---------------- ORDINE ----------------
   
-  # ---------------- NA CONTROLLO FINALE --------
-  apply_real_na_counts <- function(df_sim, df_real, tolerance){
-    
-    n <- nrow(df_sim)
-    na_real <- colSums(is.na(df_real))
-    
-    for(v in names(df_sim)){
-      
-      if(!(v %in% names(na_real))) next
-      
-      target_real <- na_real[v]
-      
-      target <- round(runif(1,
-                            max(0, target_real - tolerance),
-                            min(n - 1, target_real + tolerance)))
-      
-      # reset
-      values <- df_sim[[v]]
-      
-      # applica NA
-      na_idx <- sample(1:n, target)
-      values[na_idx] <- NA
-      
-      df_sim[[v]] <- values
-    }
-    
-    return(df_sim)
-  }
-  
-  df <- apply_real_na_counts(df, redcap_test_data, tolerance)
+  df <- df[, names(redcap_test_data)]
   
   return(df)
 }
-
-
 
 apply_real_na_counts <- function(df_sim, df_real, tolerance = 30){
   
   n <- nrow(df_sim)
   na_real <- colSums(is.na(df_real))
   
+  # 🔒 colonne che NON devono avere NA
+  no_na_vars <- c("sdo_number","record_id","numloc")
+  
   for(v in names(df_sim)){
+    
+    #SALTA colonne protette
+    if(v %in% no_na_vars) next
     
     if(!(v %in% names(na_real))) next
     
     target_real <- na_real[v]
     
-    # target con tolleranza
     target <- round(runif(1,
                           max(0, target_real - tolerance),
                           min(n, target_real + tolerance)))
     
-    # reset colonna (importante!)
     values <- df_sim[[v]]
     
-    # scegli dove mettere NA
     na_idx <- sample(1:n, target)
-    
     values[na_idx] <- NA
     
     df_sim[[v]] <- values
@@ -201,15 +196,26 @@ apply_real_na_counts <- function(df_sim, df_real, tolerance = 30){
   return(df_sim)
 }
 
-
-
 redcap_test <- generate_eurocat_test(
   eurocatData,
   redcap_test_data,
-  n = 700
+  n_sim = 700
 )
 
-write_csv2(redcap_test, paste0(exportDir, "/redcap_test.csv"))
+write_csv2(redcap_test,"~/Desktop/git_hub/dataset_test_casuali/redcap_test.csv")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -304,149 +310,119 @@ levels_sdo <- get_levels_full(sdo_1yfup_2023)
 
 
 #CREAZIONE DATASET TEST ----
-generate_sdo_test <- function(n = 1000){
+generate_sdo_test <- function(n_sim = 1000){
   
-  # -------- SEED VARIABILE --------
   seed <- as.integer(Sys.time()) + sample.int(1e6,1)
   set.seed(seed)
   message("Seed usato: ", seed)
   
-  df <- create_empty_sdo(n)
+  # ---------------- BASE ----------------
+  df <- create_empty_sdo(n_sim)
   
-  # -------- DATE --------
-  df$dt_nasc <- as.Date("2023-01-01") + sample(0:364, n, TRUE)
-  df$dt_amm  <- df$dt_nasc + sample(0:2, n, TRUE)
-  df$dt_dim  <- df$dt_amm + sample(0:15, n, TRUE)
+  # RIMUOVI cedap_linked
+  df$cedap_linked <- NULL
   
-  death_flag <- runif(n) < 0.05
-  df$dt_decesso <- as.Date(NA)
-  df$dt_decesso[death_flag] <- df$dt_dim[death_flag]
+  # ---------------- DATE (USA DATE REALI) ----------------
+  base_date <- as.Date("2023-01-01")
   
-  # -------- DERIVATE --------
-  df$GG_DEG <- as.numeric(df$dt_dim - df$dt_amm)
-  df$GG_DEGOP <- ifelse(runif(n) < 0.3,
-                        pmin(df$GG_DEG, sample(0:5, n, TRUE)),
-                        NA)
+  dt_nasc_date <- base_date + sample(0:364, n_sim, TRUE)
+  dt_amm_date  <- dt_nasc_date + sample(0:2, n_sim, TRUE)
+  dt_dim_date  <- dt_amm_date + sample(0:15, n_sim, TRUE)
   
-  df$ETA <- 0
-  df$ETA_GG <- as.numeric(df$dt_amm - df$dt_nasc)
-  df$daysAfterDelivery <- as.numeric(df$dt_dim - df$dt_nasc)
+  # 👉 CALCOLI CORRETTI
+  df$GG_DEG <- as.numeric(dt_dim_date - dt_amm_date)
+  df$ETA_GG <- as.numeric(dt_amm_date - dt_nasc_date)
   
-  # -------- ANAGRAFICA --------
-  df$COD_RG <- sample(sprintf("%03d", c(30,50,70,80,90,100,110,120,130,140)), n, TRUE)
-  df$COD_PRES <- paste0("08", sprintf("%04d", sample(1:9999, n, TRUE)))
+  # ---------------- DECESSO ----------------
+  death_flag <- runif(n_sim) < 0.05
+  dt_decesso_date <- rep(as.Date(NA), n_sim)
   
-  df$AA_SDO <- 2024
-  df$AA_DIM <- 2024
+  idx_death <- which(death_flag)
   
-  df$PROG_SDO <- sample(1:500000, n, TRUE)
-  df$PROG_PAZ <- sample(1:500000, n, TRUE)
+  if(length(idx_death) > 0){
+    
+    max_days <- as.numeric(dt_dim_date[idx_death] - dt_nasc_date[idx_death])
+    
+    dt_decesso_date[idx_death] <- dt_nasc_date[idx_death] +
+      mapply(function(x) sample(0:max(0,x),1), max_days)
+  }
   
-  df$COD_AZI <- paste0("08", sprintf("%04d", sample(1:9999, n, TRUE)))
-  df$COM_RES <- sprintf("%06d", sample(1:999999, n, TRUE))
+  # 👉 CONVERSIONE FINALE (STRINGHE DMY)
+  df$dt_nasc     <- format(dt_nasc_date, "%d-%m-%Y")
+  df$dt_amm      <- format(dt_amm_date,  "%d-%m-%Y")
+  df$dt_dim      <- format(dt_dim_date,  "%d-%m-%Y")
+  df$dt_decesso  <- format(dt_decesso_date, "%d-%m-%Y")
   
-  df$SEX <- sample(c("M","F"), n, TRUE)
-  
-  # -------- CLINICO --------
-  df$PESO_GR <- round(rnorm(n, 3200, 600))
-  df$PESO_GR[df$PESO_GR < 500] <- 500
-  df$PESO_GR[df$PESO_GR > 6000] <- 6000
-  
-  df$DRG_RG <- sprintf("%03d", sample(1:500, n, TRUE))
-  df$TIPO_DRG <- sample(c("M","C"), n, TRUE)
-  
-  df$MOD_DIM <- sample(sprintf("%03d", 1:9), n, TRUE)
-  df$REGIME_R <- sample(c("001","002"), n, TRUE)
-  df$RG_RES <- sample(sprintf("%03d", 1:200), n, TRUE)
-  
-  # -------- DIAGNOSI --------
-  icd_pool <- c(
-    "7455","7470","7793","V3000","7750",
-    "53081","76527","7608","V290","7742",
-    "769","51881","4659"
+  # ---------------- BLOCCO CLINICO ----------------
+  vars_blocco <- c(
+    "COD_PAT1","patol2","patol3","patol4","patol5","patol6",
+    paste0("interv",1:11)
   )
   
-  df$COD_PAT1 <- sample(icd_pool, n, TRUE)
+  vars_blocco <- intersect(vars_blocco, names(sdo_1yfup_2023))
   
-  fill_secondary <- function(){
-    x <- sample(icd_pool, n, TRUE)
-    x[runif(n) < 0.7] <- NA
-    x
+  idx <- sample(1:nrow(sdo_1yfup_2023), n_sim, replace = TRUE)
+  df[, vars_blocco] <- sdo_1yfup_2023[idx, vars_blocco]
+  
+  # ---------------- PROG_PAZ RANDOM ----------------
+  p_link <- 0.2
+  
+  df$PROG_PAZ <- ifelse(
+    runif(n_sim) < p_link,
+    sample(cedap$prog_paz_neo, n_sim, TRUE),
+    paste0("TEST_", sample(1e7:9e7, n_sim, TRUE))
+  )
+  
+  # ---------------- ALTRE VAR ----------------
+  vars_protette <- c(
+    "dt_nasc","dt_amm","dt_dim","dt_decesso",
+    "GG_DEG","ETA_GG",
+    vars_blocco,
+    "PROG_PAZ"
+  )
+  
+  vars_other <- setdiff(names(df), vars_protette)
+  
+  for(v in vars_other){
+    
+    if(!(v %in% names(sdo_1yfup_2023))) next
+    
+    pool <- sdo_1yfup_2023[[v]]
+    pool <- pool[!is.na(pool)]
+    
+    if(length(pool) == 0) next
+    
+    df[[v]] <- sample(pool, n_sim, replace = TRUE)
   }
   
-  df$patol2 <- fill_secondary()
-  df$patol3 <- fill_secondary()
-  df$patol4 <- fill_secondary()
-  df$patol5 <- fill_secondary()
-  df$patol6 <- fill_secondary()
+  # ---------------- NA REALISTICI ----------------
+  no_na_vars <- names(colSums(is.na(sdo_1yfup_2023)))[
+    colSums(is.na(sdo_1yfup_2023)) == 0
+  ]
   
-  # -------- PROCEDURE --------
-  proc_pool <- c("3899","8872","9396","8965","9059","9921","897")
-  
-  for(i in 1:11){
-    df[[paste0("interv", i)]] <- ifelse(runif(n) < 0.2,
-                                        sample(proc_pool, n, TRUE),
-                                        NA)
-  }
-  
-  # -------- ALTRE VAR --------
-  df$FLAG_PAT <- sample(c("00","005"), n, TRUE)
-  df$PROV_RES <- sample(sprintf("%03d", 1:110), n, TRUE)
-  df$SUB_COD <- paste0("08", sample(10000:99999, n, TRUE))
-  
-  df$NEO_TRASF <- 1
-  df$MPR <- sample(c("4259","5312","5349"), n, TRUE)
-  
-  df$ospedale <- sample(c(
-    "IRCCS AOU BOLOGNA",
-    "OSP. MODENA",
-    "OSP. PARMA",
-    "OSP. REGGIO",
-    "NON DEFINITO"
-  ), n, TRUE)
-  
-  df$cohort <- 2024
-  df$cedap_linked <- sample(1:30000, n, TRUE)
-  
-  # -------- NA CASUALI (CORRETTI) --------
-  apply_random_na <- function(df, no_na_vars){
+  for(v in names(df)){
     
-    n <- nrow(df)
+    if(v %in% no_na_vars) next
     
-    for(v in names(df)){
-      
-      if(v %in% no_na_vars) next
-      
-      x <- df[[v]]
-      
-      if(inherits(x, "Date")){
-        p <- runif(1, 0.01, 0.05)
-      } else if(is.numeric(x)){
-        p <- runif(1, 0.02, 0.08)
-      } else {
-        p <- runif(1, 0.05, 0.15)
-      }
-      
-      n_na <- floor(p * n)
-      
-      if(n_na > 0){
-        idx <- sample(1:n, n_na)
-        df[[v]][idx] <- NA
-      }
+    p <- runif(1,0.02,0.1)
+    n_na <- floor(p * n_sim)
+    
+    if(n_na > 0){
+      idx_na <- sample(1:n_sim, n_na)
+      df[[v]][idx_na] <- NA
     }
-    
-    return(df)
   }
   
-  no_na_vars <- c("COD_PAT1","dt_nasc","dt_amm","dt_dim","SEX","COD_PRES","PROG_SDO")
-  
-  df <- apply_random_na(df, no_na_vars)
+  # ---------------- ORDINE ----------------
+  df <- df[, colnames(sdo_1yfup_2023)[colnames(sdo_1yfup_2023) != "cedap_linked"]]
   
   return(df)
 }
 
-
 sdo_test <- generate_sdo_test(70000)
 
-write_csv2(sdo_test, paste0(exportDir, "/sdo_test.csv"))
+#controllo per cedap_linked: table(sdo_test$PROG_PAZ %in% cedap$prog_paz_neo)
+
+
+write_csv2(sdo_test,"~/Desktop/git_hub/dataset_test_casuali/sdo_test.csv")
 

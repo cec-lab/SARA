@@ -752,3 +752,309 @@ conta_malformazioni_per_centro <- function(input_df) {
   return(d_final)
 }
 
+
+
+
+
+#FUNZIONE TRANSCODIFICA
+
+transcode_complete <- function(df, eurocat_vars_list){
+  
+  missing_cols <- setdiff(eurocat_vars_list, names(df))
+  
+  for(col in missing_cols){
+    df[[col]] <- ""
+  }
+  
+  if("weight" %in% names(df))     df$weight[is.na(df$weight)] <- 9999
+  if("gestlength" %in% names(df)) df$gestlength[is.na(df$gestlength)] <- 99
+  
+  # DATE
+  df$datemo[
+    is.na(df$datemo) | trimws(df$datemo) == ""
+  ] <- "xxxx/xx/xx"
+  
+  if("death_date" %in% names(df)){
+    
+    df$death_date[
+      df$type == 1 & (is.na(df$death_date) | trimws(df$death_date) == "")
+    ] <- "3333/33/33"
+    
+    df$death_date[df$type != 1] <- ""
+  }
+  
+  # -------- SURVIVAL EUROCAT --------
+  if(all(c("type","death_date") %in% names(df))){
+    
+    surv <- df$survival
+    d    <- df$death_date
+    
+    surv[df$type %in% c(2,3,4)] <- 2
+    surv[df$type == 9] <- 9
+    
+    surv[df$type == 1 & d == "2222/22/22"] <- 1
+    
+    surv[df$type == 1 & 
+           !(d %in% c("2222/22/22","3333/33/33"))] <- 2
+    
+    surv[df$type == 1 & d == "3333/33/33"] <- 9
+    
+    df$survival <- surv
+  }
+  
+  # MALFO
+  for(v in paste0("malfo", 1:8)){
+    if(v %in% names(df)){
+      df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+    }
+  }
+  
+  # STRINGHE sp_
+  for(v in names(df)[grepl("^sp_", names(df))]){
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+  }
+  
+  # SIB
+  for(v in intersect(c("sib1","sib2","sib3"), names(df))){
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+  }
+  
+  # -------- NUMERICI (1 cifra → 9) --------
+  vars_9 <- c(
+    "nbrbaby","sex","type","survival","whendisc","condisc",
+    "karyo","surgery","matdiab",
+    "socf","cov_severity","consang","sibanom",
+    "moanom","faanom","matedu","socm",
+    "amniocentesis","chorvilsam","ultrason",
+    "inf_cov_test","imm_cov_test","oth_cov_test",
+    "firstpre","firsttri","assconcept","migrant",
+    "folic_g14","extra_er_resmo","prevsib","cod_pres","gentest"
+  )
+  
+  for(v in intersect(vars_9, names(df))){
+    df[[v]][is.na(df[[v]])] <- 9
+  }
+  
+  # -------- MODIFICHE PERSONALIZZATE --------
+  
+  # pm → 3 (NA o 9)
+  if("pm" %in% names(df)){
+    df$pm[is.na(df$pm) | df$pm == 9] <- 3
+  }
+  
+  # presyn → ""
+  if("presyn" %in% names(df)){
+    df$presyn <- as.character(df$presyn)
+    df$presyn[is.na(df$presyn) | df$presyn == 9 | df$presyn == "9"] <- ""
+  }
+  
+  # premal → ""
+  for(v in paste0("premal",1:8)){
+    if(v %in% names(df)){
+      df[[v]] <- as.character(df[[v]])
+      df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+    }
+  }
+  
+  # omim → ""
+  if("omim" %in% names(df)){
+    df$omim <- as.character(df$omim)
+    df$omim[is.na(df$omim) | df$omim == 9 | df$omim == "9"] <- ""
+  }
+  
+  # nbrmalf → ""
+  if("nbrmalf" %in% names(df)){
+    df$nbrmalf <- as.character(df$nbrmalf)
+    df$nbrmalf[is.na(df$nbrmalf) | df$nbrmalf == 9 | df$nbrmalf == "9"] <- ""
+  }
+  
+  # -------- NUMERICI (2 cifre → 99) --------
+  vars_99 <- c(
+    "totpreg","agedisc","agefa","agemo",
+    "bmi","mo_smoking","mo_alcohol","start_cov",
+    "pre_sa","pre_topfa","pre_live","pre_still"
+  )
+  
+  for(v in intersect(vars_99, names(df))){
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9] <- 99
+  }
+  
+  # MOTHER
+  if("occupmo" %in% names(df))        df$occupmo[is.na(df$occupmo)] <- 9999
+  if("mocitizenship" %in% names(df))  df$mocitizenship[is.na(df$mocitizenship)] <- 999
+  
+  # STRINGHE GENERICHE
+  vars_char <- c(
+    "pm_notes","illbef1","illbef2","illdur1","illdur2",
+    "omim","orpha","extra_drugs",
+    "drugs1","drugs2","drugs3","drugs4","drugs5",
+    "sdo_number","resmo","imer_key","prog_paz_neo",
+    "genrem","syndrome"
+  )
+  
+  for(v in intersect(vars_char, names(df))){
+    df[[v]] <- as.character(df[[v]])
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+  }
+  
+  # FIX ILLDUR
+  for(v in c("illdur1","illdur2")){
+    if(v %in% names(df)){
+      df[[v]] <- as.character(df[[v]])
+      
+      df[[v]][
+        is.na(df[[v]]) | trimws(df[[v]]) %in% c("", "9")
+      ] <- "9"
+      
+      df[[v]] <- suppressWarnings(as.numeric(df[[v]]))
+    }
+  }
+  
+  df <- df[, eurocat_vars_list]
+  
+  return(df)
+  
+  # -------- FINAL NA CLEAN --------
+  
+  for (col in names(df)) {
+    
+    if (is.numeric(df[[col]])) {
+      # scegli default coerente
+      df[[col]][is.na(df[[col]])] <- 9
+      
+    } else {
+      df[[col]] <- as.character(df[[col]])
+      df[[col]][is.na(df[[col]]) | trimws(df[[col]]) == ""] <- ""
+    }
+  }
+}
+
+eurocat_vars_list <- c(
+  "record_id",	
+  "birth_date",
+  "centre",
+  "numloc",	
+  "sdo_number",
+  "gestlength",	
+  "nbrbaby",
+  "sp_twin",
+  "nbrmalf",
+  "sex",
+  "type",	
+  "civreg",
+  "weight",
+  "survival",
+  "death_date",
+  "mocitizenship",
+  "resmo",
+  "extra_er_resmo",
+  "datemo",	
+  "agemo",	
+  "bmi",	
+  "totpreg",
+  "whendisc",	
+  "agedisc",	
+  "condisc",
+  "firstpre",
+  "sp_firstpre",
+  "karyo",
+  "sp_karyo",	
+  "gentest",
+  "sp_gentest",	
+  "surgery",
+  "pm",
+  "pm_notes",
+  "presyn",
+  "premal1",
+  "premal2",
+  "premal3",
+  "premal4",
+  "premal5",
+  "premal6",
+  "premal7",
+  "premal8",
+  "imer_key",
+  "syndrome",
+  "sp_syndrome",
+  "omim",
+  "orpha",
+  "malfo1",
+  "sp_malfo1",
+  "malfo2",
+  "sp_malfo2",
+  "malfo3",
+  "sp_malfo3",
+  "malfo4",
+  "sp_malfo4",
+  "malfo5",	
+  "sp_malfo5",
+  "malfo6",
+  "sp_malfo6",
+  "malfo7",
+  "sp_malfo7",
+  "malfo8",
+  "sp_malfo8",
+  "assconcept",
+  "agefa",
+  "socf",
+  "occupmo",
+  "matdiab",
+  "illbef1",
+  "sp_illbef1",
+  "illbef2",
+  "sp_illbef2",
+  "illdur1",
+  "sp_illdur1",
+  "illdur2",
+  "sp_illdur2",
+  "folic_g14",
+  "extra_drugs",
+  "firsttri",
+  "drugs1",
+  "sp_drugs",
+  "drugs2",
+  "sp_drugs_2",
+  "drugs3",
+  "sp_drugs_3",
+  "drugs4",
+  "sp_drugs_4",
+  "drugs5",
+  "sp_drugs_5",
+  "inf_cov_test",
+  "imm_cov_test",
+  "oth_cov_test",
+  "sp_oth_cov_test",
+  "start_cov",
+  "cov_severity",
+  "consang",
+  "sp_consang",
+  "sibanom",
+  "sp_sibanom",
+  "prevsib",
+  "sib1",
+  "sib2",
+  "sib3",
+  "moanom",
+  "sp_moanom",
+  "faanom",
+  "sp_faanom",
+  "matedu",
+  "socm",
+  "migrant",
+  "genrem",
+  "data_source",
+  "prog_paz_neo",
+  "cedap_linked",
+  "cod_pres",
+  "amniocentesis",
+  "chorvilsam",
+  "ultrason",
+  "mo_smoking",
+  "mo_alcohol",
+  "pre_sa",
+  "pre_topfa",
+  "pre_live",
+  "pre_still"
+)
+
+

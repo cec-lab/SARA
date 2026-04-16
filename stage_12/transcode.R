@@ -697,9 +697,6 @@ dset <- dset %>% filter(revcode != 0)
 cat("Righe totali dopo il filtro:", nrow(dset), "\n")
 print(table(dset$revcode))
 
-sdo_stage12_transcode <- dset %>% filter(revcode != 0)
-
-colSums(is.na(dset))
 
 
 

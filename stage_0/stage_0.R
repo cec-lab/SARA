@@ -22,7 +22,8 @@ source(paste0(baseDir,"/functions.R"), echo = T)
 
 
 # LOAD DATA ---
-sdo <- read_csv2(paste0(stage_0Dir, "/sdo_test.csv")) #usato dataset di campione creato da script: create_dataset_test_algo.R
+#sdo <- read_csv2(paste0(stage_0Dir, "/sdo_2023_all.csv")) #cambiare dataset con campione creato da script: create_dataset_test_algo.R
+sdo <- read_csv2("~/Desktop/git_hub/dataset_test_casuali/sdo_test.csv")
 cedap <- read_csv2(paste0(cedapDir,"/",cedapFileName))
 
 # dt_nasc CHAR -> DATE ----
