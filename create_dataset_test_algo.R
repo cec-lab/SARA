@@ -322,36 +322,18 @@ generate_sdo_test <- function(n_sim = 1000){
   # RIMUOVI cedap_linked
   df$cedap_linked <- NULL
   
-  # ---------------- DATE (USA DATE REALI) ----------------
-  base_date <- as.Date("2023-01-01")
+  # ---------------- BLOCCO REALE (CHIAVE 🔥) ----------------
+  # campioni righe reali → tutto coerente
+  idx <- sample(1:nrow(sdo_1yfup_2023), n_sim, replace = TRUE)
   
-  dt_nasc_date <- base_date + sample(0:364, n_sim, TRUE)
-  dt_amm_date  <- dt_nasc_date + sample(0:2, n_sim, TRUE)
-  dt_dim_date  <- dt_amm_date + sample(0:15, n_sim, TRUE)
+  df$PROG_PAZ   <- sdo_1yfup_2023$PROG_PAZ[idx]
+  df$dt_nasc    <- sdo_1yfup_2023$dt_nasc[idx]
+  df$dt_amm     <- sdo_1yfup_2023$dt_amm[idx]
+  df$dt_dim     <- sdo_1yfup_2023$dt_dim[idx]
+  df$dt_decesso <- sdo_1yfup_2023$dt_decesso[idx]
   
-  # 👉 CALCOLI CORRETTI
-  df$GG_DEG <- as.numeric(dt_dim_date - dt_amm_date)
-  df$ETA_GG <- as.numeric(dt_amm_date - dt_nasc_date)
-  
-  # ---------------- DECESSO ----------------
-  death_flag <- runif(n_sim) < 0.05
-  dt_decesso_date <- rep(as.Date(NA), n_sim)
-  
-  idx_death <- which(death_flag)
-  
-  if(length(idx_death) > 0){
-    
-    max_days <- as.numeric(dt_dim_date[idx_death] - dt_nasc_date[idx_death])
-    
-    dt_decesso_date[idx_death] <- dt_nasc_date[idx_death] +
-      mapply(function(x) sample(0:max(0,x),1), max_days)
-  }
-  
-  # 👉 CONVERSIONE FINALE (STRINGHE DMY)
-  df$dt_nasc     <- format(dt_nasc_date, "%d-%m-%Y")
-  df$dt_amm      <- format(dt_amm_date,  "%d-%m-%Y")
-  df$dt_dim      <- format(dt_dim_date,  "%d-%m-%Y")
-  df$dt_decesso  <- format(dt_decesso_date, "%d-%m-%Y")
+  df$GG_DEG <- sdo_1yfup_2023$GG_DEG[idx]
+  df$ETA_GG <- sdo_1yfup_2023$ETA_GG[idx]
   
   # ---------------- BLOCCO CLINICO ----------------
   vars_blocco <- c(
@@ -360,18 +342,7 @@ generate_sdo_test <- function(n_sim = 1000){
   )
   
   vars_blocco <- intersect(vars_blocco, names(sdo_1yfup_2023))
-  
-  idx <- sample(1:nrow(sdo_1yfup_2023), n_sim, replace = TRUE)
   df[, vars_blocco] <- sdo_1yfup_2023[idx, vars_blocco]
-  
-  # ---------------- PROG_PAZ RANDOM ----------------
-  p_link <- 0.2
-  
-  df$PROG_PAZ <- ifelse(
-    runif(n_sim) < p_link,
-    sample(cedap$prog_paz_neo, n_sim, TRUE),
-    paste0("TEST_", sample(1e7:9e7, n_sim, TRUE))
-  )
   
   # ---------------- ALTRE VAR ----------------
   vars_protette <- c(
@@ -400,9 +371,15 @@ generate_sdo_test <- function(n_sim = 1000){
     colSums(is.na(sdo_1yfup_2023)) == 0
   ]
   
+  vars_no_na_allowed <- c(
+    "dt_nasc","dt_amm","dt_dim","dt_decesso",
+    "GG_DEG","ETA_GG"
+  )
+  
   for(v in names(df)){
     
     if(v %in% no_na_vars) next
+    if(v %in% vars_no_na_allowed) next
     
     p <- runif(1,0.02,0.1)
     n_na <- floor(p * n_sim)
@@ -411,6 +388,32 @@ generate_sdo_test <- function(n_sim = 1000){
       idx_na <- sample(1:n_sim, n_na)
       df[[v]][idx_na] <- NA
     }
+  }
+  
+  # ---------------- NA dt_nasc (per Stage 0) ----------------
+  
+  n_na <- floor(0.05 * n_sim)
+  
+  idx_linkable <- which(df$PROG_PAZ %in% cedap$prog_paz_neo)
+  
+  n_linkable_na <- min(length(idx_linkable), floor(n_na * 0.5))
+  
+  idx_na_linkable <- sample(idx_linkable, n_linkable_na)
+  
+  idx_all <- setdiff(1:n_sim, idx_na_linkable)
+  idx_na_nonlinkable <- sample(idx_all, n_na - n_linkable_na)
+  
+  idx_na <- c(idx_na_linkable, idx_na_nonlinkable)
+  
+  df$dt_nasc[idx_na] <- NA
+  
+  # forza alcuni linkabili
+  idx_na_all <- which(is.na(df$dt_nasc))
+  n_force <- floor(length(idx_na_all) * 0.5)
+  
+  if(n_force > 0){
+    idx_force <- sample(idx_na_all, n_force)
+    df$PROG_PAZ[idx_force] <- sample(cedap$prog_paz_neo, n_force, replace = TRUE)
   }
   
   # ---------------- ORDINE ----------------
