@@ -25,6 +25,21 @@ print("READING SDO FILE..")
 sdo <- read_csv2(paste0(sdoDir, "/sdo_1yfup_2023.csv"))
 print("SDO FILE LOADED")
 
+
+# STAGE PREPROCESS ----
+
+print("STAGE PREPROCESS START")
+source(paste0(cedapDir, "/cedap_dedup.R"), echo = T)
+print("STAGE PREPROCESS END")
+
+
+# STAGE 0 ----
+
+print("STAGE 0 START")
+source(paste0(stage_0Dir, "/stage_0.R"), echo = T)
+print("STAGE 0 END")
+
+
 # STAGE 1 ----
 
 print("STAGE 1 START")

@@ -173,18 +173,6 @@ sdo_by_dt_nas <- sdo |> filter(cohort == yearOfBirth)
 #   linked[i]<-linkByProgPaz(sdo_by_dt_nas[i, "PROG_PAZ"], cedap$prog_paz_neo)
 # }
 
-## VERSIONE NUOVA (stessa logica, veloce)
-
-#  BLOCCO SBAGLIATO (NON VA IN STAGE 0)
-# idx <- sample(1:nrow(sdo_1yfup_2023), n_sim, replace = TRUE)
-# df$PROG_PAZ <- sdo_1yfup_2023$PROG_PAZ[idx]
-# df$dt_nasc <- sdo_1yfup_2023$dt_nasc[idx]
-# df$dt_amm  <- sdo_1yfup_2023$dt_amm[idx]
-# df$dt_dim  <- sdo_1yfup_2023$dt_dim[idx]
-# df$dt_decesso <- sdo_1yfup_2023$dt_decesso[idx]
-# df$GG_DEG <- sdo_1yfup_2023$GG_DEG[idx]
-# df$ETA_GG <- sdo_1yfup_2023$ETA_GG[idx]
-
 # VERSIONE CORRETTA
 
 linked <- match(sdo_by_dt_nas$PROG_PAZ, cedap$prog_paz_neo)

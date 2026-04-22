@@ -36,13 +36,13 @@ stage_12Dir=paste0(baseDir, "/stage_12")
 
 
 cedapDir=paste0(baseDir, "/cedap")
-cedapFileName="cedap_plus_2023.csv"
+cedapFileName="cedap_plus_2023_dedup.csv"
 sdoFileName_stage_0="sdo_2023_all.csv"
 sdoFileName_stage_1="sdo_1yfup_2023.csv"
 exportDir=paste0(baseDir,"/export")
 tableDir=paste0(baseDir,"/tables")
 cedap_plus_2023_file <- file.path(cedapDir, cedapFileName)
-edcFileDir <- file.path(Sys.getenv("HOME"), "Desktop", "git_hub", "SARA", "export")
+edcFileDir <- file.path(Sys.getenv("HOME"), "Desktop", "git_hub", "DARIO", "export")
 
 # FILE HANDLER ----
 

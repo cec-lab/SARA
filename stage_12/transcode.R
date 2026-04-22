@@ -24,9 +24,9 @@ source(paste0(baseDir,"/functions.R"), echo = T)
 
 
 # LOAD DATA ----
-input_df <- read_csv2(paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"), col_types = cols(PROG_PAZ = col_character()))
-input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"),col_types = cols(PROG_PAZ = col_character()))
-revcode_subset <- input_df_revcode[, c(patology_code_cols_icd10, patology_label_cols_icd9, intervention_label_cols, "revcode")]
+input_df <- read_csv2(paste0(exportDir, "/sdo_stage_11b_clinical_rev_export_final.csv"), col_types = cols(PROG_PAZ = col_character()))
+#input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"),col_types = cols(PROG_PAZ = col_character()))
+#revcode_subset <- input_df_revcode[, c(patology_code_cols_icd10, patology_label_cols_icd9, intervention_label_cols, "revcode", "PROG_PAZ")]
 eurocat_data_dict <- read_excel(paste0(tableDir,"/eurocat_data_dict.xlsx"))
 final_mapping <- read_csv2(paste0(tableDir, "/final_mapping.csv"))
 cedap_plus_2023 <- read_csv2(paste0(cedapDir,"/",cedapFileName))
@@ -34,13 +34,13 @@ eurocat_sdo_mapping <- read_excel(paste0(tableDir, "/eurocat_sdo_mapping.xlsx"))
 icd_conversion_table <- read_excel("tables/icd_conversion_table.xlsx")
 
 
-# SOSTITUZIONE LABEL IN input_df
-# all(input_df$PROG_PAZ == revcode_subset$PROG_PAZ)  # Deve restituire TRUE per essere sicuri che le righe siano identiche
-input_df[, patology_label_cols_icd9] <- revcode_subset[, patology_label_cols_icd9]
-input_df[, intervention_label_cols] <- revcode_subset[, intervention_label_cols]
-
-# AGGIUNTA COLONNA revcode
-input_df$revcode <- input_df_revcode$revcode
+# # SOSTITUZIONE LABEL IN input_df
+# #all(input_df$PROG_PAZ == revcode_subset$PROG_PAZ)  # Deve restituire TRUE per essere sicuri che le righe siano identiche
+# input_df[, patology_label_cols_icd9] <- revcode_subset[, patology_label_cols_icd9]
+# input_df[, intervention_label_cols] <- revcode_subset[, intervention_label_cols]
+# 
+# # AGGIUNTA COLONNA revcode
+# input_df$revcode <- input_df_revcode$revcode
 
 sdo_cedap_dd <- read_csv2(paste0(tableDir, "/sdo_cedap_dd.csv"))
 eurocat_vars <- final_mapping$EUROCAT_VARIABLE %>% unique() %>% na.omit()
@@ -214,12 +214,11 @@ dset$type <- recode(input_df$VITALITA,
 # consang ----
 # CEDAP: 1-3 = gradi di consanguineità (fino al 6°), 0 = non consanguinei
 # EUROCAT: 1 = Relationship of second cousin or closer, 0 = Not related or more distant, 9 = Not known
-dset$consang <- recode(input_df$CONSANGUINEITA,
-                       `1` = 1,
-                       `2` = 1,
-                       `3` = 1,
-                       `0` = 0,
-                       .default = 9)
+dset$consang <- dplyr::case_when(
+  input_df$CONSANGUINEITA %in% c(1, 2, 3) ~ 1,
+  input_df$CONSANGUINEITA == 0 ~ 0,
+  TRUE ~ 9
+)
 
 # totpreg ----
 # CEDAP: 
@@ -803,7 +802,7 @@ dset <- dset %>%
     nbrmalf = replace_na(nbrmalf, 9),
     sds_cc = replace_na(sds_cc, 9),
     mocitizenship = replace_na(mocitizenship, 999),
-    sp_karyo = replace_na(sp_karyo, ""),
+    sp_karyo = replace_na(as.character(sp_karyo), ""),
     bmi = replace_na(bmi, 99),
     circ_cran_neo = replace_na(circ_cran_neo, 99),
     mo_smoking = replace_na(mo_smoking, 99),

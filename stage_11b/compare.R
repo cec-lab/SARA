@@ -76,14 +76,20 @@ table(alreadyRecorded_PROG_PAZ)
 sdo_stage11_cedap_with_labels$revcode <- 9
 sdo_stage11_cedap_with_labels$note <- ""
 
-#test per revcode causale
-sdo_stage11_cedap_with_labels$revcode <- sample(
-  c(0,1,2),
-  nrow(sdo_stage11_cedap_with_labels),        #da commentare
-  replace = TRUE,
-  prob = c(0.7,0.2,0.1)
-)
 
-# Esporta dataset finale ----
 
 write_csv2(sdo_stage11_cedap_with_labels, file = paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"))
+
+# sdo_stage_11b_clinical_rev_export_final <- read_delim("export/sdo_stage_11b_clinical_rev_export_final.csv", 
+#                                                       delim = ";", escape_double = FALSE, trim_ws = TRUE)
+# # #test per revcode causale
+# sdo_stage_11b_clinical_rev_export_final$revcode <- sample(
+#   c(0,1,2),
+#   nrow(sdo_stage_11b_clinical_rev_export_final),        #da commentare
+#   replace = TRUE,
+#   prob = c(0.7,0.2,0.1)
+# )
+# 
+# 
+# write_csv2(sdo_stage_11b_clinical_rev_export_final, file = paste0(exportDir, "/sdo_stage_11b_clinical_rev_export_final.csv"))
+# 

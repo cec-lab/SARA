@@ -30,7 +30,7 @@ SDS_circonferenza_cranica_cutoff = -2.8
 # Caricamento dei dati ----
 
 sdo_stage7 <- read_csv2(paste0(exportDir, "/sdo_stage_7_validated_4_export.csv"), locale = locale(encoding = "UTF-8"))
-cedap_plus_2023 <- read_csv2(paste0(cedapDir, "/cedap_plus_2023.csv"),locale = locale(encoding = "UTF-8"))
+cedap_plus_2023 <- read_csv2(paste0(cedapDir, "/", cedapFileName),locale = locale(encoding = "UTF-8"))
 INeS_circonferenza_cranica <- read_csv2(paste0(tableDir, "/INeS_circonferenza_cranica.csv"), locale = locale(encoding = "UTF-8"))
 filter <- read_csv2(paste0(tableDir, "/filter.csv"), locale = locale(encoding = "UTF-8"))
 
