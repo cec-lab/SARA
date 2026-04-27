@@ -4,10 +4,13 @@ rm(list=ls())
 # (revcode=0 se riga da escludere; 1 se modificata; 2 se accettata)
 
 # === LOAD CONFIG ===
-source("/home/imer/works/algo_sdo/config.R", echo = TRUE)
-source("/home/imer/works/algo_sdo/functions.R", echo = TRUE)
-export_path <- "/home/imer/works/algo_sdo/export/revcode_analisi"
+baseDir=getwd()
+source(paste0(baseDir,"/config.R"), echo = T)
+source(paste0(baseDir,"/functions.R"), echo = T)
+
+export_path <- file.path(exportDir, "revcode_analisi")
 dir.create(export_path, showWarnings = FALSE, recursive = TRUE)
+
 
 # === LOAD DATA ===
 input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"))

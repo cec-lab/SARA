@@ -12,10 +12,11 @@ library(VIM)
 library(ggplot2)
 library(tableone)
 library(labelled)
+library(stringr)
 
 
 # PATH ----
-baseDir="/home/imer/works/algo_sdo"
+baseDir=getwd()
 sdoDir=paste0(baseDir,"/sdo")
 stage_0Dir=paste0(baseDir, "/stage_0")
 stage_1Dir=paste0(baseDir, "/stage_1")
@@ -29,19 +30,19 @@ stage_8Dir=paste0(baseDir, "/stage_8")
 stage_9Dir=paste0(baseDir, "/stage_9")
 stage_10Dir=paste0(baseDir, "/stage_10")
 stage_11Dir=paste0(baseDir, "/stage_11")
+stage_11bDir=paste0(baseDir, "/stage_11b")
 stage_mapping=paste0(baseDir, "/mapping")
 stage_12Dir=paste0(baseDir, "/stage_12")
 
 
-cedapDir="/home/imer/works/DARIO/cedap"
-cedapFileName="cedap_plus_2023.csv"
+cedapDir=paste0(baseDir, "/cedap")
+cedapFileName="cedap_plus_2023_dedup.csv"
 sdoFileName_stage_0="sdo_2023_all.csv"
 sdoFileName_stage_1="sdo_1yfup_2023.csv"
 exportDir=paste0(baseDir,"/export")
 tableDir=paste0(baseDir,"/tables")
 cedap_plus_2023_file <- file.path(cedapDir, cedapFileName)
-edcFileDir <- "/home/imer/works/DARIO/export"
-
+edcFileDir <- file.path(Sys.getenv("HOME"), "Desktop", "git_hub", "DARIO", "export")
 
 # FILE HANDLER ----
 

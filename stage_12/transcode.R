@@ -18,26 +18,29 @@
 rm(list=ls())
 
 # LOAD CONFIG ---
-source("/home/imer/works/algo_sdo/config.R", echo = T)
-source("/home/imer/works/algo_sdo/functions.R", echo = T)
+baseDir=getwd()
+source(paste0(baseDir,"/config.R"), echo = T)
+source(paste0(baseDir,"/functions.R"), echo = T)
 
 
 # LOAD DATA ----
-input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"))
-input_df <- read_csv2(paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"))
-revcode_subset <- input_df_revcode[, c(patology_code_cols_icd10, patology_label_cols_icd9, intervention_label_cols, "revcode")]
+input_df <- read_csv2(paste0(exportDir, "/sdo_stage_11b_clinical_rev_export_final.csv"), col_types = cols(PROG_PAZ = col_character()))
+#input_df_revcode <- read_csv2(paste0(stage_12Dir, "/sdo_stage_11b_clinical_rev_export_final.csv"),col_types = cols(PROG_PAZ = col_character()))
+#revcode_subset <- input_df_revcode[, c(patology_code_cols_icd10, patology_label_cols_icd9, intervention_label_cols, "revcode", "PROG_PAZ")]
 eurocat_data_dict <- read_excel(paste0(tableDir,"/eurocat_data_dict.xlsx"))
 final_mapping <- read_csv2(paste0(tableDir, "/final_mapping.csv"))
 cedap_plus_2023 <- read_csv2(paste0(cedapDir,"/",cedapFileName))
 eurocat_sdo_mapping <- read_excel(paste0(tableDir, "/eurocat_sdo_mapping.xlsx"))
+icd_conversion_table <- read_excel("tables/icd_conversion_table.xlsx")
 
-# SOSTITUZIONE LABEL IN input_df
-# all(input_df$PROG_PAZ == revcode_subset$PROG_PAZ)  # Deve restituire TRUE per essere sicuri che le righe siano identiche
-input_df[, patology_label_cols_icd9] <- revcode_subset[, patology_label_cols_icd9]
-input_df[, intervention_label_cols] <- revcode_subset[, intervention_label_cols]
 
-# AGGIUNTA COLONNA revcode
-input_df$revcode <- input_df_revcode$revcode
+# # SOSTITUZIONE LABEL IN input_df
+# #all(input_df$PROG_PAZ == revcode_subset$PROG_PAZ)  # Deve restituire TRUE per essere sicuri che le righe siano identiche
+# input_df[, patology_label_cols_icd9] <- revcode_subset[, patology_label_cols_icd9]
+# input_df[, intervention_label_cols] <- revcode_subset[, intervention_label_cols]
+# 
+# # AGGIUNTA COLONNA revcode
+# input_df$revcode <- input_df_revcode$revcode
 
 sdo_cedap_dd <- read_csv2(paste0(tableDir, "/sdo_cedap_dd.csv"))
 eurocat_vars <- final_mapping$EUROCAT_VARIABLE %>% unique() %>% na.omit()
@@ -54,29 +57,36 @@ vars_eurocat <- eurocat_sdo_mapping$EUROCAT_Variable
 # Crea un data frame vuoto con colonne da EUROCAT e righe = dataset sorgente
 dset <- as_tibble(setNames(replicate(length(vars_eurocat), rep(NA, n_righe), simplify = FALSE), vars_eurocat))
 # Loop attraverso tutte le righe di final_mapping per il mapping
+
 for (i in seq_along(final_mapping$EUROCAT_VARIABLE)) {
-  # Nome della variabile EUROCAT e della variabile SDO associata
+  
   eurocat_var <- final_mapping$EUROCAT_VARIABLE[i]
   sdo_var <- final_mapping$SDO_CEDAP_DD[i]
   
-  # Aggiungiamo un controllo per evitare errori quando la variabile EUROCAT è NA
-  if (!is.na(eurocat_var) && !is.na(sdo_var) && sdo_var %in% colnames(input_df)) {
-    # Se la variabile SDO esiste nel dataset "input_df", prendiamo i valori
+  # ---- SKIP CASI NON VALIDI ----
+  if (is.na(eurocat_var) || is.na(sdo_var)) next
+  
+  # salta valori fissi tipo "18", "2"
+  if (grepl("^[0-9]+$", sdo_var)) next
+  
+  # ---- MAPPING ----
+  if (sdo_var %in% colnames(input_df)) {
+    
     dset[[eurocat_var]] <- input_df[[sdo_var]]
     
-    # Correggi i formati per variabili specifiche
-    # 1. Se la variabile è una data (ad esempio 'birth_date'), convertiamola in formato data
+    # conversioni
     if (eurocat_var == "birth_date") {
       dset[[eurocat_var]] <- as.Date(dset[[eurocat_var]])
     }
-    # 2. Se la variabile è un numero (ad esempio 'prog_paz'), convertiamola in formato numerico
+    
     if (eurocat_var == "prog_paz") {
       dset[[eurocat_var]] <- as.numeric(dset[[eurocat_var]])
     }
     
   } else {
-    # Se la variabile SDO non esiste o è NA, lasciamo i valori come NA (già inizializzati)
-    warning(paste("Colonna SDO mancante o NA per:", sdo_var))
+    
+    # WARNING SOLO SE DAVVERO MANCA
+    warning(paste("Colonna NON trovata:", sdo_var))
   }
 }
 
@@ -193,20 +203,22 @@ dset$sex <- recode(as.character(input_df$SEX_NUM),
                    .default = 9)
 
 # TYPE ----
-dset$type <- recode(input_df$VITALITA,
-                    `1` = 1,  # Live birth
-                    `2` = 2,  # Stillbirth
-                    .default = 9)  # Not known
+# Copia i valori di VITALITA in type; ricodifica 1 e 9 in 1 e assegna 1 anche ai valori mancanti (NA),
+# lasciando invariati tutti gli altri valori (es. 2 rimane 2)
 
+dset$type <- recode(input_df$VITALITA,
+                    `1` = 1,
+                    `9` = 1,
+                    .missing = 1)
+  
 # consang ----
 # CEDAP: 1-3 = gradi di consanguineità (fino al 6°), 0 = non consanguinei
 # EUROCAT: 1 = Relationship of second cousin or closer, 0 = Not related or more distant, 9 = Not known
-dset$consang <- recode(input_df$CONSANGUINEITA,
-                       `1` = 1,
-                       `2` = 1,
-                       `3` = 1,
-                       `0` = 0,
-                       .default = 9)
+dset$consang <- dplyr::case_when(
+  input_df$CONSANGUINEITA %in% c(1, 2, 3) ~ 1,
+  input_df$CONSANGUINEITA == 0 ~ 0,
+  TRUE ~ 9
+)
 
 # totpreg ----
 # CEDAP: 
@@ -221,10 +233,14 @@ dset$consang <- recode(input_df$CONSANGUINEITA,
 # "99" = Not known
 # Step 1: Calcolo dei concepimenti precedenti
 
-input_df$CONCEPIMENTI_PRECEDENTI <- dplyr::case_when(   #avevamo messo le etichette in sds. adesso riconvertito per calcolo eurocat
-  input_df$CONCEPIMENTI_PRECEDENTI == "SI" ~ 1,
-  input_df$CONCEPIMENTI_PRECEDENTI == "NO" ~ 0,
-  TRUE ~ NA_real_
+input_df$CONCEPIMENTI_PRECEDENTI <- rowSums(
+  cbind(
+    input_df$NUMERO_ABORTI_SPONTANEI,
+    input_df$NUMERO_IVG,
+    input_df$NUMERO_NATI_VIVI,
+    input_df$NUMERO_NATI_MORTI
+  ),
+  na.rm = TRUE
 )
 
 # Step 2: Transcodifica secondo EUROCAT
@@ -301,7 +317,7 @@ ricodifica_vars <- c("sex", "consang", "totpreg", "socm", "moanom", "faanom",
 
 
 
-# === 5. MAPPING CON RICALCOLO ===
+# === 5. MAPPING CON RICALCOLO ===----
 ricalcolo_vars <- final_mapping %>%
   filter(CALCOLARE == 1) %>%
   pull(EUROCAT_VARIABLE)
@@ -342,21 +358,37 @@ dset$karyo <- ifelse(!is.na(input_df$CARIOTIPO_DEL_NATO) & input_df$CARIOTIPO_DE
 # •	2: Il bambino è morto entro la prima settimana.
 # •	9: Non noto.
 
-dset$survival <- with(input_df, ifelse(
-  !is.na(dt_decesso) & !is.na(dt_nasc),
-  ifelse(as.numeric(difftime(ymd(dt_decesso), ymd(dt_nasc), units = "days")) >= 7, 2, 2),  # morto (entro o dopo 7 gg, ma sempre 2 = No)
-  ifelse(!is.na(dt_dim) & !is.na(dt_nasc),
-         ifelse(as.numeric(difftime(ymd(dt_dim), ymd(dt_nasc), units = "days")) >= 7, 1, 1),  # vivo e dimesso >= 7 giorni = 1 = Yes
-         9  # nessuna info
-  )
-))
+# Calcolo differenze giorni
+days_to_death <- as.numeric(difftime(input_df$dt_decesso,
+                                     input_df$dt_nasc,
+                                     units = "days"))
 
+days_to_dim <- as.numeric(difftime(input_df$dt_dim,
+                                   input_df$dt_nasc,
+                                   units = "days"))
+
+dset$survival <- dplyr::case_when(
+  
+  # Morto entro 6 giorni (0–6)
+  !is.na(days_to_death) & days_to_death <= 6 ~ 2,
+  
+  # Vivo oltre 7 giorni
+  is.na(days_to_death) &
+    !is.na(days_to_dim) & days_to_dim >= 7 ~ 1,
+  
+  # Survival ignota a 7 giorni ma vivo alla dimissione <7
+  is.na(days_to_death) &
+    !is.na(days_to_dim) & days_to_dim < 7 &
+    dset$type == 1 ~ 3,
+  
+  # Nessuna informazione
+  TRUE ~ 9
+)
 
 
 
 
 # condisc ----
-# DA VERIFICARE
 # Origine CEDAP: default implicito = '9' 
 # Destinazione EUROCAT:
 #   1 = Alive ,
@@ -410,7 +442,7 @@ dset$nbrbaby <- case_when(
 
 
 
- 
+
 #civreg ----
 # Origine CEDAP: VITALITA
 # Destinazione EUROCAT: 1 se vitalità = 1, altrimenti 9 = Not Known
@@ -433,6 +465,32 @@ dset$bmi <- with(input_df, {
 
 
 
+#death_date ----
+
+
+dset$death_date <- case_when(
+  
+  # Non live birth → death_date non applicabile (ma teniamo coerente)
+  dset$type != 1 ~ "",
+  
+  # Morte con data valida
+  !is.na(input_df$dt_decesso) ~ format(input_df$dt_decesso, "%Y-%m-%d"),
+  
+  # Morto ma data mancante (caso teorico: survival indica morto ma no data)
+  is.na(input_df$dt_decesso) & dset$survival == 2 ~ "xxxx-xx-xx",
+  
+  # Vivo a 1 anno (follow-up completo e nessun decesso registrato)
+  is.na(input_df$dt_decesso) & dset$survival %in% c(1,3) ~ "2222-22-22",
+  
+  # Stato vitale ignoto
+  dset$survival == 9 ~ "3333-33-33",
+  
+  # Non noto se vivo o morto a 1
+  TRUE ~ "3333-33-33"
+)
+
+
+
 
 #'metodi_PMA' ----
 dset$assconcept <- recode(input_df$metodi_PMA,
@@ -443,86 +501,78 @@ dset$assconcept <- recode(input_df$metodi_PMA,
                           `5` = 5,
                           `6` = 10,
                           .default = 9)                      
-                          
-                          
-                          
+
+
+
 
 #syndromes ----
 
-# Carica file sindromi
-# syndromes <- read_delim("/home/imer/works/algo_sdo/tables/syndromes.csv", 
-#                         delim = ";", escape_double = FALSE, trim_ws = TRUE)
-# 
-# # Codici e etichette
-# icd10 <- trimws(syndromes$`ICD10- BPA`)
-# labels <- syndromes$Syndrome
-# 
-# # Scorri ogni riga
-# for (i in 1:nrow(dset)) {
-#   # Estrai codici malfo
-#   malfos <- as.character(unlist(dset[i, paste0("malfo", 1:6)]))
-#   malfos <- trimws(malfos)
-#   
-#   # Cerca la prima sindrome
-#   match_idx <- match(malfos, icd10)
-#   first_match <- which(!is.na(match_idx))[1]
-#   
-#   if (!is.na(first_match)) {
-#     # Salva codice sindrome e descrizione
-#     dset$syndrome[i] <- icd10[match_idx[first_match]]
-#     dset$sp_syndrome[i] <- labels[match_idx[first_match]]
-#     
-#     # Rimuovi il codice matched e shift left
-#     malfos <- malfos[-first_match]
-#     malfos <- c(malfos, rep(NA, 6 - length(malfos)))
-#     
-#     # Riscrivi colonne malfo aggiornate
-#     for (j in 1:6) {
-#       dset[i, paste0("malfo", j)] <- malfos[j]
-#     }
-#   }
-# }
-# === syndromes corretto con shift ===
+# ---- funzione pulizia ICD10 ----
+clean_icd10 <- function(x) {
+  x <- as.character(x)
+  x <- trimws(x)
+  x <- toupper(x)
+  x <- gsub("\\.", "", x)
+  x[x %in% c("", "NA")] <- NA
+  return(x)
+}
 
-# Carica file sindromi
-syndromes <- read_delim("/home/imer/works/algo_sdo/tables/syndromes.csv", 
-                        delim = ";", escape_double = FALSE, trim_ws = TRUE)
+# ---- carica file ----
+syndromes <- read.csv2(paste0(tableDir,"/syndromes.csv"))
 
-# Codici e etichette
-icd10 <- trimws(syndromes$`ICD10- BPA`)
-labels <- syndromes$Syndrome
+icd10_clean <- clean_icd10(syndromes$ICD10..BPA)
+labels <- as.character(syndromes$Syndrome)
 
-# Loop sulle righe
+# ---- DEBUG: codici non trovati ----
+all_codes <- unique(unlist(dset[, paste0("malfo", 1:8)]))
+missing_codes <- setdiff(clean_icd10(all_codes), icd10_clean)
+
+cat("\nCODICI NON TROVATI IN SYNDROMES:\n")
+print(missing_codes)
+
+# ---- inizializza ----
+n_sind_tot <- 0
+
+# ---- loop principale ----
 for (i in 1:nrow(dset)) {
-  # Estrai codici malfo e sp_malfo, riempi con NA se mancanti
-  malfos <- as.character(unlist(dset[i, paste0("malfo", 1:6)]))
-  sp_malfos <- as.character(unlist(dset[i, paste0("sp_malfo", 1:6)]))
   
-  if (length(malfos) < 6) malfos <- c(malfos, rep(NA, 6 - length(malfos)))
-  if (length(sp_malfos) < 6) sp_malfos <- c(sp_malfos, rep(NA, 6 - length(sp_malfos)))
+  malfos <- as.character(unlist(dset[i, paste0("malfo", 1:8)]))
+  sp_malfos <- as.character(unlist(dset[i, paste0("sp_malfo", 1:8)]))
   
-  # Nuovi vettori per malfo e sp_malfo
-  new_malfo <- rep(NA, 6)
-  new_sp_malfo <- rep(NA, 6)
+  new_malfo <- rep(NA_character_, 8)
+  new_sp_malfo <- rep(NA_character_, 8)
   
   sind_codes <- c()
   sind_labels <- c()
   
   malfo_idx <- 1
   
-  for (j in 1:6) {
-    code <- trimws(malfos[j])
+  for (j in 1:8) {
+    
+    cell <- malfos[j]
     label <- sp_malfos[j]
     
-    if (!is.na(code) && code != "") {
-      if (code %in% icd10) {
-        # È una sindrome
-        sind_codes <- c(sind_codes, code)
-        sind_labels <- c(sind_labels, labels[match(code, icd10)])
+    if (is.na(cell) || cell == "") next
+    
+    # ---- split multi-codici ----
+    codes_split <- unlist(strsplit(cell, "\\|"))
+    codes_split <- clean_icd10(codes_split)
+    
+    for (code_clean in codes_split) {
+      
+      if (is.na(code_clean)) next
+      
+      idx <- match(code_clean, icd10_clean)
+      
+      if (!is.na(idx)) {
+        # è sindrome
+        sind_codes <- c(sind_codes, code_clean)
+        sind_labels <- c(sind_labels, labels[idx])
+        
       } else {
-        # È una malformazione, metti a sinistra
-        if (malfo_idx <= 6) {
-          new_malfo[malfo_idx] <- code
+        # NON è sindrome → resta in malfo
+        if (malfo_idx <= 8) {
+          new_malfo[malfo_idx] <- code_clean
           new_sp_malfo[malfo_idx] <- label
           malfo_idx <- malfo_idx + 1
         }
@@ -530,28 +580,79 @@ for (i in 1:nrow(dset)) {
     }
   }
   
-  # Aggiorna dset con malfo shiftate
-  for (k in 1:6) {
-    dset[i, paste0("malfo", k)] <- new_malfo[k]
-    dset[i, paste0("sp_malfo", k)] <- new_sp_malfo[k]
+  # ---- aggiorna malfo shiftate ----
+  for (k in 1:8) {
+    dset[[paste0("malfo", k)]][i] <- new_malfo[k]
+    dset[[paste0("sp_malfo", k)]][i] <- new_sp_malfo[k]
   }
   
-  # Aggiorna sindrome
+  # ---- aggiorna sindromi ----
   if (length(sind_codes) > 0) {
-    dset$syndrome[i] <- paste(sind_codes, collapse = "|")
-    dset$sp_syndrome[i] <- paste(sind_labels, collapse = "|")
-  } else {
-    dset$syndrome[i] <- NA
-    dset$sp_syndrome[i] <- NA
+    
+    dset$syndrome[i] <- paste(unique(sind_codes), collapse = "|")
+    dset$sp_syndrome[i] <- paste(unique(sind_labels), collapse = "|")
+    
+    n_sind_tot <- n_sind_tot + length(unique(sind_codes))
+    
+    cat("Riga:", i,
+        "| Numloc:", dset$numloc[i],
+        "| Sindrome trovata:", paste(unique(sind_codes), collapse = ", "),
+        "\n")
   }
 }
+
+# ---- controllo shift ----
+check_shift <- apply(dset[paste0("malfo",1:8)], 1, function(x) {
+  any(is.na(x) & !is.na(c(x[-1], NA)))
+})
+
+cat("\nRighe con buchi:", sum(check_shift), "\n")
+
+
+
+
+#controllo e recupero etichetta - malfoX con codice e sp_malfo vuote
+
+# conv_codes <- gsub("\\.", "", toupper(trimws(icd_conversion_table$ICD10)))
+# conv_labels <- icd_conversion_table$Descrizione
+# 
+# for (i in 1:nrow(dset)) {
+#   
+#   for (j in 1:8) {
+#     
+#     malfo_col <- paste0("malfo", j)
+#     sp_col <- paste0("sp_malfo", j)
+#     
+#     code <- dset[[malfo_col]][i]
+#     label <- dset[[sp_col]][i]
+#     
+#     # condizione che hai richiesto
+#     if (!is.na(code) && code != "" && (is.na(label) || trimws(label) == "")) {
+#       
+#       code_clean <- gsub("\\.", "", toupper(trimws(code)))
+#       
+#       match_idx <- match(code_clean, conv_codes)
+#       
+#       if (!is.na(match_idx)) {
+#         
+#         dset[[sp_col]][i] <- conv_labels[match_idx]
+#         
+#         cat("Descrizione aggiunta | Riga:", i,
+#             "| Codice:", code,
+#             "| Descrizione:", conv_labels[match_idx], "\n")
+#       }
+#     }
+#   }
+# }
+
+
 
 
 #surgery ----
 #eurocat: 1, Performed (or expected) in the first year of life | 2, Performed (or expected) after the first year of life | 3, Prenatal surgery | 4, No surgery required | 5, Too severe for surgery | 6, Died before surgery | 9, Not known
 # Imposta surgery a "1" se validation_type contiene il valore 2 (da solo o tra pipe), altrimenti "9"
 
-dset$surgery <- ifelse(
+input_df$surgery <- ifelse(
   grepl("(^2$|(^|\\|)2(\\||$))", as.character(input_df$validation_type)),
   1,
   9
@@ -559,7 +660,8 @@ dset$surgery <- ifelse(
 
 
 
-#VARIABILI MANCANTI
+
+#VARIABILI MANCANTI ----
 
 
 # lista delle variabili EUROCAT con mapping diretto
@@ -594,16 +696,13 @@ dset <- dset %>% filter(revcode != 0)
 cat("Righe totali dopo il filtro:", nrow(dset), "\n")
 print(table(dset$revcode))
 
-sdo_stage12_transcode <- dset %>% filter(revcode != 0)
-
-colSums(is.na(dset))
 
 
 
 
 
 
-# Sostituzione NA per variabili specifiche in dset ----
+# LAVORO NA IN 9 O "" ----
 
 # 1. Rimozione colonne non necessarie
 dset$cov_severity <- NULL
@@ -640,10 +739,12 @@ dset$drugs4 <- as.character(dset$drugs4)
 dset$drugs5 <- as.character(dset$drugs5)
 dset$extra_drugs <- as.character(dset$extra_drugs)
 dset$sp_firstpre <- as.character(dset$sp_firstpre)
+dset$gestlength <- as.numeric(dset$gestlength)
+
 
 dset <- dset %>%
   mutate(
-    datemo = replace_na(as.character(datemo), "xx-xx-xxxx"),
+    datemo = replace_na(as.character(datemo), "xxxx-xx-xx"),
     nbrbaby = replace_na(nbrbaby, 9),
     sex = replace_na(sex, 9),
     type = replace_na(type, 9),
@@ -658,7 +759,7 @@ dset <- dset %>%
     presyn = replace_na(presyn, 9),
     matdiab = replace_na(matdiab, 9),
     sp_drugs = replace_na(sp_drugs, ),
-    syndrome = replace_na(syndrome, ),
+    syndrome = replace_na(as.character(syndrome), ),
     premal1 = replace_na(premal1, 9),
     premal2 = replace_na(premal2, 9),
     premal3 = replace_na(premal3, 9),
@@ -688,7 +789,7 @@ dset <- dset %>%
     firstpre = replace_na(firstpre, 9),
     sp_firstpre = replace_na(sp_firstpre, ""),
     migrant =  replace_na(migrant, 9),
-    sp_syndrome = replace_na(sp_syndrome, ""),
+    sp_syndrome = replace_na(as.character(sp_syndrome), ""),
     drugs1 = replace_na(drugs1, ""),
     drugs2 = replace_na(drugs2, ""),
     drugs3 = replace_na(drugs3, ""),
@@ -699,10 +800,9 @@ dset <- dset %>%
     oth_cov_test = replace_na(oth_cov_test, 9),
     record_id = replace_na(record_id, 9999),
     nbrmalf = replace_na(nbrmalf, 9),
-    death_date = ifelse(is.na(death_date), 2222-22-22, death_date),
     sds_cc = replace_na(sds_cc, 9),
     mocitizenship = replace_na(mocitizenship, 999),
-    sp_karyo = replace_na(sp_karyo, ""),
+    sp_karyo = replace_na(as.character(sp_karyo), ""),
     bmi = replace_na(bmi, 99),
     circ_cran_neo = replace_na(circ_cran_neo, 99),
     mo_smoking = replace_na(mo_smoking, 99),
@@ -713,8 +813,7 @@ dset <- dset %>%
     sibanom = replace_na(sibanom, 9),
     faanom =  replace_na(faanom, 9),
     matedu = replace_na(matedu, 9),
-    
-    
+    syndrome = replace_na(syndrome, "")
   )
 
 # 6. Riempimento per tutte le colonne che iniziano con "sp_" non già trattate
@@ -754,7 +853,7 @@ for (var in vars_with_na) {
 dset <- data.frame(lapply(dset, function(x) {
   if(is.character(x)) {
     x <- trimws(x)        # elimina spazi a inizio/fine
-          
+    
   }
   return(x)
 }))
@@ -838,8 +937,34 @@ dset$sp_cario <- NULL #abbiamo compilato sp_kario che è quella giusta DA RIMUOV
 # dset[date_cols] <- lapply(dset[date_cols], function(x) paste0("'", format(x, "%Y-%m-%d")))
 
 
+# ================================
+# FORMATTAZIONE DATE EUROCAT
+# ================================
 
-write_csv2(dset, file = paste0(exportDir, "/sdo_stage12_transcode_export.csv"), na = "")
+#  birth_date (è Date → converti in character con slash)
+if ("birth_date" %in% names(dset)) {
+  dset$birth_date <- ifelse(
+    is.na(dset$birth_date),
+    "",
+    format(dset$birth_date, "%Y/%m/%d")
+  )
+}
+
+#  death_date (già character → sostituisci "-" con "/")
+if ("death_date" %in% names(dset)) {
+  dset$death_date <- gsub("-", "/", dset$death_date)
+}
+
+#  datemo (già character → sostituisci "-" con "/")
+if ("datemo" %in% names(dset)) {
+  dset$datemo <- gsub("-", "/", dset$datemo)
+}
+
+
+write_csv2(dset, file = paste0(exportDir, "/sdo_stage12_transcode_export.csv"))
+
+gitDir_templates <- file.path(Sys.getenv("HOME"), "Desktop", "git_hub", "SARA")
+write_csv2(dset, file.path(gitDir_templates, "sdo_stage12_transcode_export.csv")) #path generalizzata <- config.R
 
 project_base <- file.path(path.expand("~"), "Desktop", "git_hub")  # <-- cambia SOLO "Desktop"
 

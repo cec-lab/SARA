@@ -1,14 +1,15 @@
 # Clear existing data and graphics
 rm(list=ls())
 graphics.off()
+baseDir=getwd()
 
 # SOURCE CONFIGURATION FILE ----
 
-source("/home/imer/works/algo_sdo/config.R", echo = T)
-
+source(paste0(baseDir,"/config.R"), echo = T)
+ 
 # SOURCE CUSTOM FUNCTIONS FILE ----
 
-source("/home/imer/works/algo_sdo/functions.R", echo = T)
+source(paste0(baseDir,"/functions.R"), echo = T)
 
 # LOG FILE OPEN ----
 
@@ -23,6 +24,21 @@ setwd(baseDir)
 print("READING SDO FILE..")
 sdo <- read_csv2(paste0(sdoDir, "/sdo_1yfup_2023.csv"))
 print("SDO FILE LOADED")
+
+
+# STAGE PREPROCESS ----
+
+print("STAGE PREPROCESS START")
+source(paste0(cedapDir, "/cedap_dedup.R"), echo = T)
+print("STAGE PREPROCESS END")
+
+
+# STAGE 0 ----
+
+print("STAGE 0 START")
+source(paste0(stage_0Dir, "/stage_0.R"), echo = T)
+print("STAGE 0 END")
+
 
 # STAGE 1 ----
 
@@ -101,6 +117,13 @@ print("STAGE 11 END")
 # print("MAPPING START")
 # source(paste0(stage_mapping, "/tracciato2.R"), echo = T)
 # print("MAPPING END")
+
+
+#Stage11B ----
+
+print("STAGE 11B START")
+source(paste0(stage_11bDir, "/compare.R"), echo = T)
+print("STAGE 11B END")
 
 
 #Stage12 ----

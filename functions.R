@@ -100,19 +100,22 @@ rowFilterByCodes <- function(data, colNames) {
 #' @param columns Vettore nomi colonne.
 #' @param extra_codes Codici ICD9 extra oltre il range 740-759.
 #' @return Dataset con celle non valide svuotate.
-clean_invalid_patologies <- function(df, columns, extra_codes) {
-  for (i in 1:nrow(df)) {
-    for (col in columns) {
-      cell <- df[i, get(col)]
-      if (!is.na(cell) & !(grepl("^74[0-9]|^75[0-9]", cell) | cell %in% extra_codes)) {
-        df[i, (col) := ""]
-      }
-    }
-    if (all(df[i, ..columns] == "")) {
-      df[i, (columns) := ""]
-    }
-  }
-  return(df)
+clean_invalid_patologies <- function(dt, columns, extra_codes) {
+  data.table::setDT(dt)
+  
+  extra_codes_vec <- as.character(extra_codes[[1]])
+  
+  dt[, (columns) := lapply(.SD, function(x) {
+    x <- as.character(x)
+    x[x == ""] <- NA
+    
+    valid <- grepl("^74[0-9]|^75[0-9]", x) | x %in% extra_codes_vec
+    
+    x[!valid] <- NA
+    x
+  }), .SDcols = columns]
+  
+  return(dt)
 }
 
 #' extra_code_filter
@@ -120,11 +123,15 @@ clean_invalid_patologies <- function(df, columns, extra_codes) {
 #' @description Controlla se un codice è tra quelli extra definiti.
 #' @param value Codice da validare.
 #' @return TRUE se codice è valido tra quelli extra, FALSE altrimenti.
-extra_code_filter <- function(value) {
+#' 
+extra_code_filter <- function(value, extra_codes) {
   if (is.na(value)) return(FALSE)
   value <- as.character(value)
   if (nchar(value) < 3) return(FALSE)
-  return(value %in% extra_codes)
+  
+  extra_codes_vec <- as.character(extra_codes[[1]])
+  
+  return(value %in% extra_codes_vec)
 }
 
 #' filter_rows_extra
@@ -133,17 +140,54 @@ extra_code_filter <- function(value) {
 #' @param data Data frame.
 #' @param col_names Colonne da esplorare.
 #' @return Subset di righe contenenti almeno un codice extra valido.
-filter_rows_extra <- function(data, col_names) {
-  valid_rows <- logical(nrow(data))
-  for (i in seq_len(nrow(data))) {
-    for (col in col_names) {
-      if (extra_code_filter(data[i, col])) {
-        valid_rows[i] <- TRUE
-        break
-      }
-    }
-  }
-  return(data[valid_rows, ])
+#' 
+filter_rows_extra <- function(data, col_names, extra_codes) {
+  data <- data.table::as.data.table(data)
+  
+  extra_codes_vec <- as.character(extra_codes[[1]])
+  
+  test_mat <- do.call(cbind, lapply(col_names, function(col) {
+    x <- as.character(data[[col]])
+    x[x == ""] <- NA
+    x %in% extra_codes_vec
+  }))
+  
+  valid_rows <- which(rowSums(test_mat, na.rm = TRUE) > 0)
+  
+  return(data[valid_rows])
+}
+
+#' shift_icd9_left
+#'
+#' @description Compatta i codici ICD9 spostando a sinistra i valori non-NA
+#' riempiendo con NA le colonne successive. Garantisce anche la conversione
+#' a character per evitare problemi con codici ICD9.
+#'
+#' @param dt Data frame o data.table contenente le colonne ICD9.
+#' @param cols Nomi delle colonne ICD9 da compattare.
+#'
+#' @return Data.table con le colonne ICD9 riallineate a sinistra.
+
+shift_icd9_left <- function(dt, cols) {
+  data.table::setDT(dt)
+  
+  # pulizia base
+  dt[, (cols) := lapply(.SD, function(x) {
+    x <- as.character(x)
+    x[x == "" | x == "NA"] <- NA
+    x
+  }), .SDcols = cols]
+  
+  mat <- as.matrix(dt[, ..cols])
+  
+  mat_shifted <- t(apply(mat, 1, function(x) {
+    x <- x[!is.na(x)]
+    c(x, rep(NA_character_, length(cols) - length(x)))
+  }))
+  
+  dt[, (cols) := as.data.table(mat_shifted)]
+  
+  return(dt)
 }
 
 # =====================================================
@@ -574,15 +618,20 @@ sottostringhe_uguali <- function(x) {
 #' @description Converte una stringa di codici ICD9 (separati da "|") in codici ICD10 utilizzando la tabella di conversione in tables.
 #' @param code_str Stringa con codici ICD9 concatenati (es. "74310|75650").
 #' @return Stringa con codici ICD10 corrispondenti ai valori ICD9: "74310|75650", sempre separati da "|".
-get_icd10_code <- function(code_str) {
-  if (is.na(code_str) || code_str == "") return(NA)
+
+get_icd10_code <- function(code_str, dict) {
+  if (is.na(code_str) || code_str == "") return(NA_character_)
+  
   codes <- str_split(code_str, "\\|")[[1]]
+  
   labels <- sapply(codes, function(codice) {
-    codice <- str_trim(codice)
-    codice_padded <- str_pad(codice, width = 6, pad = "0", side = "right")
-    label <- icd_conversion_table$ICD10[icd_conversion_table$ICD9CM == codice_padded]
-    if (length(label) > 0) label else "NA"
+    codice <- str_pad(str_trim(codice), 6, "right", "0")
+    
+    idx <- match(codice, dict$ICD9CM)
+    
+    if (!is.na(idx)) dict$ICD10[idx] else NA_character_
   })
+  
   paste(labels, collapse = "|")
 }
 
@@ -591,15 +640,20 @@ get_icd10_code <- function(code_str) {
 #' @description Restituisce le descrizioni testuali (label) ICD10 corrispondenti ai codici ICD9 forniti, tramite conversione.
 #' @param code_str Stringa di codici ICD9 (separati da "|").
 #' @return Stringa con label ICD10 corrispondenti, separate da "|".
-get_icd10_description <- function(code_str) {
-  if (is.na(code_str) || code_str == "") return(NA)
+
+get_icd10_description <- function(code_str, dict) {
+  if (is.na(code_str) || code_str == "") return(NA_character_)
+  
   codes <- str_split(code_str, "\\|")[[1]]
+  
   labels <- sapply(codes, function(codice) {
-    codice <- str_trim(codice)
-    codice_padded <- str_pad(codice, width = 6, pad = "0", side = "right")
-    label <- icd_conversion_table$Descrizione[icd_conversion_table$ICD9CM == codice_padded]
-    if (length(label) > 0) label else "NA"
+    codice <- str_pad(str_trim(codice), 6, "right", "0")
+    
+    idx <- match(codice, dict$ICD9CM)
+    
+    if (!is.na(idx)) dict$Descrizione[idx] else NA_character_
   })
+  
   paste(labels, collapse = "|")
 }
 
@@ -627,29 +681,34 @@ map_multi_codes_interv <- function(code_str, dict) {
 #' @param code_str Stringa contenente codici di patologia.
 #' @param dict Dizionario con colonne `codice` e `descrizione`.
 #' @return Stringa con descrizioni associate, separate da "|".
-map_multi_codes_pat <- function(code_str, dict) {
-  if (is.na(code_str) || code_str == "") return(NA)
-  codes <- str_split(code_str, "\\|")[[1]]
-  labels <- sapply(codes, function(codice) {
-    codice <- str_trim(codice)
-    codice_padded <- pad_to_6_digits(codice)
-    label <- dict$descrizione[dict$codice == codice_padded]
-    if (length(label) > 0) label else "NA"
-  })
-  paste(labels, collapse = "|")
-}
 
-#' pad_to_6_digits
-#'
-#' @description Normalizza un codice ICD9 portandolo a 6 caratteri, aggiungendo zeri a destra (aggiunge gli zeri finali per uniformare tutti i codici a 6 cifre) .
-#' @param code Codice ICD9 da formattare.
-#' @return Codice ICD9 con padding fino a 6 cifre (stringa).
-pad_to_6_digits <- function(code) {
-  code <- as.character(code)
-  code <- str_replace_all(code, "\\s+", "")
-  n <- nchar(code)
-  ifelse(n == 5, paste0(code, "0"),
-         ifelse(n == 4, paste0(code, "00"), code))
+map_multi_codes_pat <- function(code_str, dict, extra_codes) {
+  if (is.na(code_str) || code_str == "") return(NA_character_)
+  
+  codes <- str_split(code_str, "\\|")[[1]]
+  
+  labels <- sapply(codes, function(codice) {
+    codice <- str_pad(str_trim(codice), 6, "right", "0")
+    
+    # 1. lookup principale
+    idx_main <- match(codice, dict$ICD9CM)
+    
+    if (!is.na(idx_main)) {
+      return(dict$Descrizione[idx_main])
+    }
+    
+    # 2. fallback su extra_codes
+    idx_extra <- match(codice, str_pad(extra_codes$ICD9, 6, "right", "0"))
+    
+    if (!is.na(idx_extra)) {
+      return(extra_codes$Descrizione[idx_extra])
+    }
+    
+    # 3. non trovato
+    return(NA_character_)
+  })
+  
+  paste(labels, collapse = "|")
 }
 
 # =====================================================
@@ -692,4 +751,342 @@ conta_malformazioni_per_centro <- function(input_df) {
   
   return(d_final)
 }
+
+
+
+
+
+#FUNZIONE TRANSCODIFICA
+
+transcode_complete <- function(df, eurocat_vars_list){
+  
+  # ================================
+  # 1. AGGIUNTA COLONNE MANCANTI
+  # ================================
+  missing_cols <- setdiff(eurocat_vars_list, names(df))
+  
+  for(col in missing_cols){
+    df[[col]] <- ""
+  }
+  
+  # ================================
+  # 2. DEFAULT NUMERICI BASE
+  # ================================
+  if("weight" %in% names(df))     df$weight[is.na(df$weight)] <- 9999
+  if("gestlength" %in% names(df)) df$gestlength[is.na(df$gestlength)] <- 99
+  
+  # ================================
+  # 3. DATE
+  # ================================
+  if("datemo" %in% names(df)){
+    df$datemo[is.na(df$datemo) | trimws(df$datemo) == ""] <- "xxxx/xx/xx"
+  }
+  
+  if("death_date" %in% names(df)){
+    
+    # NON live birth → vuoto
+    df$death_date[df$type != 1] <- ""
+    
+    # LIVE birth senza data → vivo a 1 anno
+    df$death_date[
+      df$type == 1 & (is.na(df$death_date) | trimws(df$death_date) == "")
+    ] <- "2222/22/22"
+  }
+  
+  # ================================
+  # 4. SURVIVAL EUROCAT
+  # ================================
+  if(all(c("type","death_date") %in% names(df))){
+    
+    surv <- df$survival
+    d    <- df$death_date
+    
+    # non live birth → morto
+    surv[df$type %in% c(2,3,4)] <- 2
+    
+    # type ignoto
+    surv[df$type == 9] <- 9
+    
+    # vivo a 1 anno
+    surv[df$type == 1 & d == "2222/22/22"] <- 1
+    
+    # morto (data reale o xxxx)
+    surv[df$type == 1 & !(d %in% c("2222/22/22","3333/33/33"))] <- 2
+    
+    # stato ignoto
+    surv[df$type == 1 & d == "3333/33/33"] <- 9
+    
+    df$survival <- surv
+  }
+  
+  # ================================
+  # 5. MALFORMAZIONI
+  # ================================
+  for(v in paste0("malfo", 1:8)){
+    if(v %in% names(df)){
+      df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+    }
+  }
+  
+  # ================================
+  # 6. STRINGHE sp_
+  # ================================
+  for(v in names(df)[grepl("^sp_", names(df))]){
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+  }
+  
+  # ================================
+  # 7. SIBLING
+  # ================================
+  for(v in intersect(c("sib1","sib2","sib3"), names(df))){
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+  }
+  
+  # ================================
+  # 8. NUMERICI → 9
+  # ================================
+  vars_9 <- c(
+    "nbrbaby","sex","type","survival","whendisc","condisc",
+    "karyo","surgery","matdiab",
+    "socf","cov_severity","consang","sibanom",
+    "moanom","faanom","matedu","socm",
+    "amniocentesis","chorvilsam","ultrason",
+    "inf_cov_test","imm_cov_test","oth_cov_test",
+    "firstpre","firsttri","assconcept","migrant",
+    "folic_g14","extra_er_resmo","prevsib","cod_pres","gentest"
+  )
+  
+  for(v in intersect(vars_9, names(df))){
+    df[[v]][is.na(df[[v]])] <- 9
+  }
+  
+  # ================================
+  # 9. MODIFICHE SPECIFICHE
+  # ================================
+  
+  if("pm" %in% names(df)){
+    df$pm[is.na(df$pm) | df$pm == 9] <- 3
+  }
+  
+  if("presyn" %in% names(df)){
+    df$presyn <- as.character(df$presyn)
+    df$presyn[is.na(df$presyn) | df$presyn == 9 | df$presyn == "9"] <- ""
+  }
+  
+  for(v in paste0("premal",1:8)){
+    if(v %in% names(df)){
+      df[[v]] <- as.character(df[[v]])
+      df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+    }
+  }
+  
+  if("omim" %in% names(df)){
+    df$omim <- as.character(df$omim)
+    df$omim[is.na(df$omim) | df$omim == 9 | df$omim == "9"] <- ""
+  }
+  
+  if("nbrmalf" %in% names(df)){
+    df$nbrmalf <- as.character(df$nbrmalf)
+    df$nbrmalf[is.na(df$nbrmalf) | df$nbrmalf == 9 | df$nbrmalf == "9"] <- ""
+  }
+  
+  # ================================
+  # 10. NUMERICI → 99
+  # ================================
+  vars_99 <- c(
+    "totpreg","agedisc","agefa","agemo",
+    "bmi","mo_smoking","mo_alcohol","start_cov",
+    "pre_sa","pre_topfa","pre_live","pre_still"
+  )
+  
+  for(v in intersect(vars_99, names(df))){
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9] <- 99
+  }
+  
+  # ================================
+  # 11. MADRE
+  # ================================
+  if("occupmo" %in% names(df))       df$occupmo[is.na(df$occupmo)] <- 9999
+  if("mocitizenship" %in% names(df)) df$mocitizenship[is.na(df$mocitizenship)] <- 999
+  
+  # ================================
+  # 12. STRINGHE GENERICHE
+  # ================================
+  vars_char <- c(
+    "pm_notes","illbef1","illbef2","illdur1","illdur2",
+    "omim","orpha","extra_drugs",
+    "drugs1","drugs2","drugs3","drugs4","drugs5",
+    "sdo_number","resmo","imer_key","prog_paz_neo",
+    "genrem","syndrome"
+  )
+  
+  for(v in intersect(vars_char, names(df))){
+    df[[v]] <- as.character(df[[v]])
+    df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
+  }
+  
+  # ================================
+  # 13. FIX ILLDUR
+  # ================================
+  for(v in c("illdur1","illdur2")){
+    if(v %in% names(df)){
+      df[[v]] <- as.character(df[[v]])
+      df[[v]][is.na(df[[v]]) | trimws(df[[v]]) %in% c("", "9")] <- "9"
+      df[[v]] <- suppressWarnings(as.numeric(df[[v]]))
+    }
+  }
+  
+  # ================================
+  # 14. ORDER VARS
+  # ================================
+  df <- df[, eurocat_vars_list]
+  
+  # ================================
+  # 15. FINAL CLEAN
+  # ================================
+  for (col in names(df)) {
+    if (is.numeric(df[[col]])) {
+      df[[col]][is.na(df[[col]])] <- 9
+    } else {
+      df[[col]] <- as.character(df[[col]])
+      df[[col]][is.na(df[[col]]) | trimws(df[[col]]) == ""] <- ""
+    }
+  }
+  
+  return(df)
+}
+
+
+
+
+
+
+eurocat_vars_list <- c(
+  "record_id",	
+  "birth_date",
+  "centre",
+  "numloc",	
+  "sdo_number",
+  "gestlength",	
+  "nbrbaby",
+  "sp_twin",
+  "nbrmalf",
+  "sex",
+  "type",	
+  "civreg",
+  "weight",
+  "survival",
+  "death_date",
+  "mocitizenship",
+  "resmo",
+  "extra_er_resmo",
+  "datemo",	
+  "agemo",	
+  "bmi",	
+  "totpreg",
+  "whendisc",	
+  "agedisc",	
+  "condisc",
+  "firstpre",
+  "sp_firstpre",
+  "karyo",
+  "sp_karyo",	
+  "gentest",
+  "sp_gentest",	
+  "surgery",
+  "pm",
+  "pm_notes",
+  "presyn",
+  "premal1",
+  "premal2",
+  "premal3",
+  "premal4",
+  "premal5",
+  "premal6",
+  "premal7",
+  "premal8",
+  "imer_key",
+  "syndrome",
+  "sp_syndrome",
+  "omim",
+  "orpha",
+  "malfo1",
+  "sp_malfo1",
+  "malfo2",
+  "sp_malfo2",
+  "malfo3",
+  "sp_malfo3",
+  "malfo4",
+  "sp_malfo4",
+  "malfo5",	
+  "sp_malfo5",
+  "malfo6",
+  "sp_malfo6",
+  "malfo7",
+  "sp_malfo7",
+  "malfo8",
+  "sp_malfo8",
+  "assconcept",
+  "agefa",
+  "socf",
+  "occupmo",
+  "matdiab",
+  "illbef1",
+  "sp_illbef1",
+  "illbef2",
+  "sp_illbef2",
+  "illdur1",
+  "sp_illdur1",
+  "illdur2",
+  "sp_illdur2",
+  "folic_g14",
+  "extra_drugs",
+  "firsttri",
+  "drugs1",
+  "sp_drugs",
+  "drugs2",
+  "sp_drugs_2",
+  "drugs3",
+  "sp_drugs_3",
+  "drugs4",
+  "sp_drugs_4",
+  "drugs5",
+  "sp_drugs_5",
+  "inf_cov_test",
+  "imm_cov_test",
+  "oth_cov_test",
+  "sp_oth_cov_test",
+  "start_cov",
+  "cov_severity",
+  "consang",
+  "sp_consang",
+  "sibanom",
+  "sp_sibanom",
+  "prevsib",
+  "sib1",
+  "sib2",
+  "sib3",
+  "moanom",
+  "sp_moanom",
+  "faanom",
+  "sp_faanom",
+  "matedu",
+  "socm",
+  "migrant",
+  "genrem",
+  "data_source",
+  "prog_paz_neo",
+  "cedap_linked",
+  "cod_pres",
+  "amniocentesis",
+  "chorvilsam",
+  "ultrason",
+  "mo_smoking",
+  "mo_alcohol",
+  "pre_sa",
+  "pre_topfa",
+  "pre_live",
+  "pre_still"
+)
+
 
