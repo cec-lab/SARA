@@ -16,7 +16,7 @@ source(paste0(baseDir,"/functions.R"), echo = T)
 sdo_stage11_cedap_with_labels <- read_csv2(paste0(exportDir, "/sdo_stage11_cedap_with_labels_export.csv"))
 
 redcapData_stage_1_1 <- read_csv2(paste0(edcFileDir, "/redcapData_stage_1_1.csv"))
-                                   
+
 
 icd_conversion_table <- read_excel(paste0(tableDir, "/icd_conversion_table.xlsx"))
 
@@ -75,8 +75,6 @@ table(alreadyRecorded_PROG_PAZ)
 
 sdo_stage11_cedap_with_labels$revcode <- 9
 sdo_stage11_cedap_with_labels$note <- ""
-
-
 
 write_csv2(sdo_stage11_cedap_with_labels, file = paste0(exportDir, "/sdo_stage_11b_clinical_rev_export.csv"))
 

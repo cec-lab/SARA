@@ -25,7 +25,7 @@ baseDir=getwd()
 source(paste0(baseDir,"/config.R"), echo = T)
 source(paste0(baseDir,"/functions.R"), echo = T)
 
-SDS_circonferenza_cranica_cutoff = -2.8
+SDS_circonferenza_cranica_cutoff = -3
 
 # Caricamento dei dati ----
 
@@ -75,8 +75,6 @@ for (i in seq_len(nrow(sdo_stage8))) {
 # Inserimento della nuova colonna nel dataset
 sdo_stage8$sds_cc <- SDS_circonferenza
 
-# Continua con il resto dello script...
-
 
 # Creazione della colonna 'violazione_filtro' ----
 
@@ -99,101 +97,86 @@ sdo_stage8 <- sdo_stage8 %>%
 conds<-c("eta_gestazionale < eg",
          "GG_DEG < ricgg",
          "malformazione_tipo == 'isolata'",
-         "sds_cc < SDS_circonferenza_cranica_cutoff")
+         "sds_cc >= SDS_circonferenza_cranica_cutoff")
 
 
 for(i in 1:dim(filter)[1]){
-
+  
   icd = filter[i, ICD9]
   eg = filter[i, eg]
   ricgg = filter[i, ricgg]
   isolata = filter[i, isolata]
   sds = filter[i, sds]
   print(paste(icd, eg, ricgg, isolata, sds))
-
+  
   f1 = ifelse(eg>0,eg,NA)
   f2 = ifelse(ricgg>0,ricgg,NA)
   f3 = ifelse(isolata == 1, 1, NA)
   f4 = ifelse(sds == 1, 1, NA)
-
+  
   fts <- c(f1, f2, f3, f4)
-
+  
   cond <- paste(conds[which(!is.na(fts))], collapse = " & ")
   #cond <- paste0("if(", cond, ")")
-
+  
   print(cond)
-
-  sdo_stage8 <- sdo_stage8 |> mutate(violazione_filtro = case_when(eval(parse(text=cond)) & COD_PAT1 == icd ~ TRUE,
-                                                                 eval(parse(text=cond)) & patol2 == icd ~ TRUE,
-                                                                 eval(parse(text=cond)) & patol3 == icd ~ TRUE,
-                                                                 eval(parse(text=cond)) & patol4 == icd ~ TRUE,
-                                                                 eval(parse(text=cond)) & patol5 == icd ~ TRUE,
-                                                                 eval(parse(text=cond)) & patol6 == icd ~ TRUE,
-                                                                 TRUE ~ violazione_filtro))
+  
+  cond_eval <- eval(parse(text = cond), envir = sdo_stage8)
+  
+  # gestisci NA
+  cond_eval[is.na(cond_eval)] <- FALSE
+  
+  sdo_stage8 <- sdo_stage8 |> mutate(
+    violazione_filtro = case_when(
+      cond_eval & (COD_PAT1 == icd) ~ TRUE,
+      cond_eval & (patol2 == icd) ~ TRUE,
+      cond_eval & (patol3 == icd) ~ TRUE,
+      cond_eval & (patol4 == icd) ~ TRUE,
+      cond_eval & (patol5 == icd) ~ TRUE,
+      cond_eval & (patol6 == icd) ~ TRUE,
+      TRUE ~ violazione_filtro
+    )
+  )
 }
 
 
-
 #verifica funzione filtro sds ----
-# sdo_stage8[
-#   violazione_filtro == TRUE & 
-#     !is.na(sds_cc) & 
-#     sds_cc < SDS_circonferenza_cranica_cutoff & 
-#     (COD_PAT1 %in% filter[sds == 1, ICD9] |
-#        patol2  %in% filter[sds == 1, ICD9] |
-#        patol3  %in% filter[sds == 1, ICD9] |
-#        patol4  %in% filter[sds == 1, ICD9] |
-#        patol5  %in% filter[sds == 1, ICD9] |
-#        patol6  %in% filter[sds == 1, ICD9]),
-#   .(COD_PAT1, patol2, patol3, patol4, patol5, patol6,
-#     sds_cc, violazione_filtro, eta_gestazionale, malformazione_tipo)
-# ]
-# 
-# #verifica sds<=2.8 <- esclusi
-# 
-# malfo_7421_rows <- sdo_stage8[
-#   COD_PAT1 == 7421 |
-#     patol2 == 7421 |
-#     patol3 == 7421 |
-#     patol4 == 7421 |
-#     patol5 == 7421 |
-#     patol6 == 7421
-# ]
-# 
-# # Tra queste, seleziono quelle con SDS ≤ -2.8
-# malfo_7421_sotto_cutoff <- malfo_7421_rows[sds_cc<= -2.8]
-# 
-# # Output del controllo
-# if (nrow(malfo_7421_sotto_cutoff) == 0) {
-#   cat("✅ Nessuna malformazione 7421 è presente con SDS ≤ -2.8.\n")
-# } else {
-#   cat(" ATTENZIONE:", nrow(malfo_7421_sotto_cutoff), "righe escluse con malformazione 7421 e SDS ≤ -2.8.\n")
-#   print(malfo_7421_sotto_cutoff[, .(violazione_filtro, cedap_linked, sds_cc, COD_PAT1, patol2, patol3, patol4, patol5, patol6)])
-# }
-# 
-# #verifica esckusione righe evidenziate in tab
-# # filter_out_check <- read_csv2(paste0(exportDir, "/sdo_stage_8_validated_filters_export.csv"))
-# # malfo_7421_sotto_cutoff <- filter_out_check %>%
-# #   filter(
-# #     sds_cc <= -2.8,
-# #     COD_PAT1 == 7421 |
-# #       patol2 == 7421 |
-# #       patol3 == 7421 |
-# #       patol4 == 7421 |
-# #       patol5 == 7421 |
-# #       patol6 == 7421
-# #   )
-# # 
-# # # Output di controllo
-# # if (nrow(malfo_7421_sotto_cutoff) == 0) {
-# #   cat("✅ Nessun caso con 7421 e SDS ≤ -2.8 è stato trattenuto: sono tutti esclusi correttamente.\n")
-# # } else {
-# #   cat("⚠️ ATTENZIONE:", nrow(malfo_7421_sotto_cutoff), "righe con 7421 e SDS ≤ -2.8 sono escluse (filter_out), verifica ok.\n")
-# #   print(
-# #     malfo_7421_sotto_cutoff %>%
-# #       select(cedap_linked, sds_cc, COD_PAT1, patol2, patol3, patol4, patol5, patol6)
-# #   )
-# # }
+sdo_stage8[
+  violazione_filtro == TRUE &
+    !is.na(sds_cc) &
+    sds_cc < SDS_circonferenza_cranica_cutoff &
+    (COD_PAT1 %in% filter[sds == 1, ICD9] |
+       patol2  %in% filter[sds == 1, ICD9] |
+       patol3  %in% filter[sds == 1, ICD9] |
+       patol4  %in% filter[sds == 1, ICD9] |
+       patol5  %in% filter[sds == 1, ICD9] |
+       patol6  %in% filter[sds == 1, ICD9]),
+  .(COD_PAT1, patol2, patol3, patol4, patol5, patol6,
+    sds_cc, violazione_filtro, eta_gestazionale, malformazione_tipo)
+]
+
+#verifica sds<=3 <- esclusi
+
+malfo_7421_rows <- sdo_stage8[
+  COD_PAT1 == 7421 |
+    patol2 == 7421 |
+    patol3 == 7421 |
+    patol4 == 7421 |
+    patol5 == 7421 |
+    patol6 == 7421
+]
+
+# Tra queste, seleziono quelle con SDS ≤ -3
+malfo_7421_sotto_cutoff <- malfo_7421_rows[sds_cc<= -3]
+
+# Output del controllo
+if (nrow(malfo_7421_sotto_cutoff) == 0) {
+  cat("✅ Nessuna malformazione 7421 è presente con SDS ≤ -3.\n")
+} else {
+  cat(" ATTENZIONE:", nrow(malfo_7421_sotto_cutoff), "righe escluse con malformazione 7421 e SDS ≤ -3.\n")
+  print(malfo_7421_sotto_cutoff[, .(violazione_filtro, cedap_linked, sds_cc, COD_PAT1, patol2, patol3, patol4, patol5, patol6)])
+}
+
 
 # OUT ----
 
