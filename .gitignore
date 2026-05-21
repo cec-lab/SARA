@@ -47,6 +47,7 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+<<<<<<< HEAD
 
 # Export folder
 export/
@@ -54,3 +55,7 @@ export/
 # macos 
 
 .DS_Store
+
+# Export folder
+export/
+.positai

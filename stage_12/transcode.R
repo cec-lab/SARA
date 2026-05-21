@@ -121,12 +121,12 @@ for (var in not_known_vars) {
 }
 
 # Mapping diretto delle etichette da input_df a sp_malfo1, sp_malfo2, sp_malfo3, etc.
-dset$sp_malfo1 <- ifelse(!is.na(input_df$COD_PAT1_label_icd10), input_df$COD_PAT1_label, 9)
-dset$sp_malfo2 <- ifelse(!is.na(input_df$patol2_label_icd10), input_df$patol2_label, 9)
-dset$sp_malfo3 <- ifelse(!is.na(input_df$patol3_label_icd10), input_df$patol3_label, 9)
-dset$sp_malfo4 <- ifelse(!is.na(input_df$patol4_label_icd10), input_df$patol4_label, 9)
-dset$sp_malfo5 <- ifelse(!is.na(input_df$patol5_label_icd10), input_df$patol5_label, 9)
-dset$sp_malfo6 <- ifelse(!is.na(input_df$patol6_label_icd10), input_df$patol6_label, 9)
+dset$sp_malfo1 <- ifelse(!is.na(input_df$COD_PAT1_label_icd10), input_df$COD_PAT1_label_icd10, 9)
+dset$sp_malfo2 <- ifelse(!is.na(input_df$patol2_label_icd10), input_df$patol2_label_icd10, 9)
+dset$sp_malfo3 <- ifelse(!is.na(input_df$patol3_label_icd10), input_df$patol3_label_icd10, 9)
+dset$sp_malfo4 <- ifelse(!is.na(input_df$patol4_label_icd10), input_df$patol4_label_icd10, 9)
+dset$sp_malfo5 <- ifelse(!is.na(input_df$patol5_label_icd10), input_df$patol5_label_icd10, 9)
+dset$sp_malfo6 <- ifelse(!is.na(input_df$patol6_label_icd10), input_df$patol6_label_icd10, 9)
 
 
 # Mapping diretto delle patol code icd10 con le malfo1..malfo6 ----
@@ -210,7 +210,7 @@ dset$type <- recode(input_df$VITALITA,
                     `1` = 1,
                     `9` = 1,
                     .missing = 1)
-  
+
 # consang ----
 # CEDAP: 1-3 = gradi di consanguineità (fino al 6°), 0 = non consanguinei
 # EUROCAT: 1 = Relationship of second cousin or closer, 0 = Not related or more distant, 9 = Not known
@@ -285,7 +285,7 @@ dset$sibanom <- ifelse(input_df$MALFORMAZIONI_FRATELLI_SORELLE == 2, 4, 9)
 dset$whendisc <- ifelse(
   (!is.na(input_df$ETA_GESTAZIONALE_ALLA_DIAGNOSI) & input_df$ETA_GESTAZIONALE_ALLA_DIAGNOSI < 42),
   6,
-  1
+  9
 )
 
 # pm ----
@@ -650,10 +650,10 @@ cat("\nRighe con buchi:", sum(check_shift), "\n")
 
 #surgery ----
 #eurocat: 1, Performed (or expected) in the first year of life | 2, Performed (or expected) after the first year of life | 3, Prenatal surgery | 4, No surgery required | 5, Too severe for surgery | 6, Died before surgery | 9, Not known
-# Imposta surgery a "1" se validation_type contiene il valore 2 (da solo o tra pipe), altrimenti "9"
+# Imposta surgery a "1" se validation_type contiene il valore 1 (da solo o tra pipe), altrimenti "9"
 
-input_df$surgery <- ifelse(
-  grepl("(^2$|(^|\\|)2(\\||$))", as.character(input_df$validation_type)),
+dset$surgery <- ifelse(
+  grepl("(1$|(^|\\|)1(\\||$))", as.character(input_df$validation_type)),
   1,
   9
 )
@@ -744,7 +744,7 @@ dset$gestlength <- as.numeric(dset$gestlength)
 
 dset <- dset %>%
   mutate(
-    datemo = replace_na(as.character(datemo), "xxxx-xx-xx"),
+    datemo = replace_na(as.character(datemo), "XXXX/XX/XX"), #PROVA IN MAIUSC COME FATTO NEL 2023 ALTRIMENTI DMS METTE xx/xx/1999
     nbrbaby = replace_na(nbrbaby, 9),
     sex = replace_na(sex, 9),
     type = replace_na(type, 9),
@@ -971,5 +971,3 @@ project_base <- file.path(path.expand("~"), "Desktop", "git_hub")  # <-- cambia 
 target_dir <- file.path(project_base, "DARIO", "templates")
 
 write_csv2(dset, file.path(target_dir, "sdo_stage12_transcode_export.csv"))
-
-

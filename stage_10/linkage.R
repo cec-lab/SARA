@@ -81,13 +81,6 @@ sdo_stage10_cedap_combined <- merge(
 
 
 
-# Selezione delle righe con sds_cc <= -2.8 
-righe_sotto_cutoff <- sdo_stage10_cedap_combined[sdo_stage10_cedap_combined$sds_cc <= -2.8, ]
-colonne_da_mostrare <- c("PROG_PAZ", icd9SearchCols, intervention_cols, "sds_cc")
-righe_filtrate_sds_da_escludere <- righe_sotto_cutoff[, colonne_da_mostrare, drop = FALSE]
-print(righe_filtrate_sds_da_escludere)
-
-
 
 # OUT ----
 

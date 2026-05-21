@@ -77,16 +77,26 @@ codeFilter <- function(code) {
 #' @param colNames Nomi colonne da ispezionare.
 #' @return Lista con due oggetti: righe filtrate con almeno un codice valido, righe escluse.
 rowFilterByCodes <- function(data, colNames) {
+  
   righe_valide <- logical(nrow(data))
+  
   for (i in seq_len(nrow(data))) {
+    
     for (col in colNames) {
-      if (codeFilter(data[i, col])) {
+      
+      valore <- data[[col]][i]
+      
+      if (codeFilter(valore)) {
         righe_valide[i] <- TRUE
         break
       }
     }
   }
-  return(list(data[righe_valide, ], data[righe_valide == FALSE, ]))
+  
+  list(
+    data[righe_valide, ],
+    data[!righe_valide, ]
+  )
 }
 
 # =====================================================
@@ -203,7 +213,7 @@ shift_icd9_left <- function(dt, cols) {
 #' @param extra_codes Codici ICD validi extra.
 #' @return Dataset con righe filtrate.
 clean_minor_codes <- function(df, columns, minor_codes) {
-    df[columns] <- lapply(df[columns], function(x) as.character(x))
+  df[columns] <- lapply(df[columns], function(x) as.character(x))
   df[columns] <- lapply(df[columns], function(x) replace_na(x, ""))
   rows_to_remove <- c()  
   
@@ -211,17 +221,17 @@ clean_minor_codes <- function(df, columns, minor_codes) {
     patol_values <- df[i, columns]  
     patol_values <- unlist(patol_values) 
     patol_values <- patol_values[patol_values != ""]  
-        if (length(patol_values) == 0) {
+    if (length(patol_values) == 0) {
       next
     }
-        if (all(patol_values %in% minor_codes)) {
+    if (all(patol_values %in% minor_codes)) {
       rows_to_remove <- c(rows_to_remove, i)  # Rimuovi la riga
     }
-        if (length(patol_values) == 1 && patol_values %in% minor_codes) {
+    if (length(patol_values) == 1 && patol_values %in% minor_codes) {
       rows_to_remove <- c(rows_to_remove, i)  # Rimuovi la riga
     }
   }
-    if (length(rows_to_remove) > 0) {
+  if (length(rows_to_remove) > 0) {
     df <- df[-rows_to_remove, ]
   }
   
@@ -233,7 +243,7 @@ clean_minor_codes <- function(df, columns, minor_codes) {
 #' @description Variante della precedente, restituisce anche righe rimosse.
 #' @return Lista con `cleaned_data` e `removed_data`.
 clean_minor_codes_with_removed <- function(df, columns, minor_codes) {
-    df[columns] <- lapply(df[columns], function(x) as.character(x))
+  df[columns] <- lapply(df[columns], function(x) as.character(x))
   df[columns] <- lapply(df[columns], function(x) replace_na(x, ""))
   rows_to_remove <- c()  
   removed_rows <- list() 
@@ -242,7 +252,7 @@ clean_minor_codes_with_removed <- function(df, columns, minor_codes) {
     patol_values <- df[i, columns]  
     patol_values <- unlist(patol_values)  
     patol_values <- patol_values[patol_values != ""]  
-        if (length(patol_values) == 0) {
+    if (length(patol_values) == 0) {
       next
     }
     
@@ -250,15 +260,15 @@ clean_minor_codes_with_removed <- function(df, columns, minor_codes) {
       rows_to_remove <- c(rows_to_remove, i)  
       removed_rows <- append(removed_rows, list(df[i, ])) 
     }
-        if (length(patol_values) == 1 && patol_values %in% minor_codes) {
+    if (length(patol_values) == 1 && patol_values %in% minor_codes) {
       rows_to_remove <- c(rows_to_remove, i)  # Rimuovi la riga
       removed_rows <- append(removed_rows, list(df[i, ])) 
     }
   }
-    if (length(rows_to_remove) > 0) {
+  if (length(rows_to_remove) > 0) {
     df <- df[-rows_to_remove, ]
   }
-    removed_rows_df <- do.call(rbind, removed_rows)
+  removed_rows_df <- do.call(rbind, removed_rows)
   
   return(list(cleaned_data = df, removed_data = removed_rows_df))
 }
@@ -309,13 +319,13 @@ update_validation_optimized <- function(sdo_stage_3_nominors_export, surgery_rul
   for (i in 1:nrow(surgery_rules)) {
     code_pat <- surgery_rules$Icd[i]
     code_interv <- surgery_rules$CodInterv[i]
-        rows_with_pat <- which(sdo_stage_3_nominors_export$COD_PAT1 == code_pat | 
+    rows_with_pat <- which(sdo_stage_3_nominors_export$COD_PAT1 == code_pat | 
                              sdo_stage_3_nominors_export$patol2 == code_pat |
                              sdo_stage_3_nominors_export$patol3 == code_pat |
                              sdo_stage_3_nominors_export$patol4 == code_pat |
                              sdo_stage_3_nominors_export$patol5 == code_pat |
                              sdo_stage_3_nominors_export$patol6 == code_pat)
-        for (j in rows_with_pat) {
+    for (j in rows_with_pat) {
       if (code_interv %in% sdo_stage_3_nominors_export[j, c("interv1", "interv2", "interv3", "interv4", "interv5", "interv6",
                                                             "interv7", "interv8", "interv9", "interv10", "interv11")]) {
         sdo_stage_3_nominors_export$validated[j] <- 1
@@ -351,15 +361,15 @@ validate_sdo <- function(sdo_data, valid_default, icd9_columns_sdo, icd9_column_
   if (!(icd9_column_valid %in% names(valid_default))) {
     stop(paste("Errore: la colonna ICD9 nel file valid_default non esiste. Colonne disponibili:", paste(names(valid_default), collapse = ", ")))
   }
-    sdo_data[, validation_type := as.character(validation_type)]
-    sdo_data[, any_match := Reduce(`|`, lapply(.SD, function(x) x %in% valid_default[[icd9_column_valid]])), 
+  sdo_data[, validation_type := as.character(validation_type)]
+  sdo_data[, any_match := Reduce(`|`, lapply(.SD, function(x) x %in% valid_default[[icd9_column_valid]])), 
            .SDcols = icd9_columns_sdo]
-    sdo_data[any_match == TRUE, `:=`(
+  sdo_data[any_match == TRUE, `:=`(
     validated = 1, 
     validation_type = ifelse( validation_type == "0", 
                               "2", 
                               paste0(validation_type, "|2")))  ]
-    sdo_data[, any_match := NULL]
+  sdo_data[, any_match := NULL]
   
   return(sdo_data)
 }
@@ -382,14 +392,14 @@ validate_sdo <- function(sdo_data, valid_default, icd9_columns_sdo, icd9_column_
 validate_icd9_with_cedap <- function(sdo_data, cedap_data, icd9_sdo_cols, icd9_cedap_cols, linked_col) {
   for (i in 1:nrow(sdo_data)) {
     cedap_row_num <- sdo_data[[linked_col]][i]
-        sdo_icd9_codes <- unlist(sdo_data[i, ..icd9_sdo_cols])
-        cedap_icd9_codes <- unlist(cedap_data[cedap_row_num, ..icd9_cedap_cols])
-        sdo_icd9_codes <- sdo_icd9_codes[!is.na(sdo_icd9_codes)]
+    sdo_icd9_codes <- unlist(sdo_data[i, ..icd9_sdo_cols])
+    cedap_icd9_codes <- unlist(cedap_data[cedap_row_num, ..icd9_cedap_cols])
+    sdo_icd9_codes <- sdo_icd9_codes[!is.na(sdo_icd9_codes)]
     cedap_icd9_codes <- cedap_icd9_codes[!is.na(cedap_icd9_codes)]
-        match_found <- any(sdo_icd9_codes %in% cedap_icd9_codes)
-        if (match_found) {
+    match_found <- any(sdo_icd9_codes %in% cedap_icd9_codes)
+    if (match_found) {
       sdo_data[i, validated := 1]  # Segnare come validato
-            current_validation <- sdo_data$validation_type[i]
+      current_validation <- sdo_data$validation_type[i]
       if (current_validation == "0") {
         sdo_data[i, validation_type := "3"]
       } else if (!grepl("\\b3\\b", current_validation)) {  # Evitiamo duplicati
@@ -419,6 +429,7 @@ validate_icd9_with_cedap <- function(sdo_data, cedap_data, icd9_sdo_cols, icd9_c
 #'
 #' @return Il data frame originale con la colonna `validation_type` aggiornata per le righe che presentano duplicazioni 
 #' di codici ICD9 all’interno dello stesso `PROG_PAZ`.
+
 validate_duplicates <- function(dataset, minor_codes, icd9SearchCols) {
   # 1. Aggiungere ID numerico per riferimento
   dataset <- dataset %>%
@@ -481,6 +492,8 @@ validate_duplicates <- function(dataset, minor_codes, icd9SearchCols) {
   
   # 5. Rimuovere la colonna ID temporanea
   dataset <- dataset %>% select(-ID)
+  
+  dataset$validated[dataset$validation_type != "0"] <- 1
   
   return(dataset)
 }
@@ -758,6 +771,7 @@ conta_malformazioni_per_centro <- function(input_df) {
 
 #FUNZIONE TRANSCODIFICA
 
+
 transcode_complete <- function(df, eurocat_vars_list){
   
   # ================================
@@ -772,14 +786,17 @@ transcode_complete <- function(df, eurocat_vars_list){
   # ================================
   # 2. DEFAULT NUMERICI BASE
   # ================================
-  if("weight" %in% names(df))     df$weight[is.na(df$weight)] <- 9999
+  if("weight" %in% names(df)) {
+    df$weight[is.na(df$weight) | df$weight == 0] <- 9999
+  }
   if("gestlength" %in% names(df)) df$gestlength[is.na(df$gestlength)] <- 99
   
   # ================================
   # 3. DATE
   # ================================
   if("datemo" %in% names(df)){
-    df$datemo[is.na(df$datemo) | trimws(df$datemo) == ""] <- "xxxx/xx/xx"
+    df$datemo[is.na(df$datemo) | trimws(df$datemo) == ""] <- "XXXX/XX/XX"  #PROVA IN MAIUSC COME FATTO NEL 2023 ALTRIMENTI DMS METTE xx/xx/1999
+    df$datemo <- gsub("-", "/", df$datemo)
   }
   
   if("death_date" %in% names(df)){
@@ -793,6 +810,20 @@ transcode_complete <- function(df, eurocat_vars_list){
     ] <- "2222/22/22"
   }
   
+  for(v in c("datemo","birth_date","death_date","agefa")){
+    
+    if(v %in% names(df)){
+      
+      df[[v]] <- as.character(df[[v]])
+      
+      # sostituisce - con / per EDC
+      if("data_source" %in% names(df)){
+        idx <- df$data_source == "EDC"
+        df[[v]][idx] <- gsub("-", "/", df[[v]][idx])
+      }
+    }
+  }
+  
   # ================================
   # 4. SURVIVAL EUROCAT
   # ================================
@@ -801,8 +832,11 @@ transcode_complete <- function(df, eurocat_vars_list){
     surv <- df$survival
     d    <- df$death_date
     
+    # type 4 -> survival 2 secondo guida 1.5
+    surv[df$type == 4] <- 2
+    
     # non live birth → morto
-    surv[df$type %in% c(2,3,4)] <- 2
+    surv[df$type %in% c(2,3)] <- 2
     
     # type ignoto
     surv[df$type == 9] <- 9
@@ -810,20 +844,65 @@ transcode_complete <- function(df, eurocat_vars_list){
     # vivo a 1 anno
     surv[df$type == 1 & d == "2222/22/22"] <- 1
     
-    # morto (data reale o xxxx)
+    # morto (data reale)
     surv[df$type == 1 & !(d %in% c("2222/22/22","3333/33/33"))] <- 2
+    
+    # morto dopo 7 giorni -> survival = 1
+    if(all(c("birth_date","death_date") %in% names(df))){
+      
+      birth_real <- as.Date(df$birth_date, format = "%Y/%m/%d")
+      death_real <- as.Date(df$death_date, format = "%Y/%m/%d")
+      
+      days_to_death <- as.numeric(
+        difftime(death_real,
+                 birth_real,
+                 units = "days")
+      )
+      
+      surv[
+        df$type == 1 &
+          surv == 2 &
+          !is.na(days_to_death) &
+          days_to_death > 7
+      ] <- 1
+    }
     
     # stato ignoto
     surv[df$type == 1 & d == "3333/33/33"] <- 9
     
+    if(all(c("dt_nasc","dt_dim") %in% names(df))){
+      
+      days_to_dim <- as.numeric(
+        difftime(df$dt_dim,
+                 df$dt_nasc,
+                 units = "days")
+      )
+      
+      surv[
+        df$type == 1 &
+          !is.na(days_to_dim) &
+          days_to_dim < 7 &
+          (
+            is.na(d) |
+              trimws(d) == "" |
+              d %in% c("2222/22/22","3333/33/33")
+          )
+      ] <- 3
+    }
     df$survival <- surv
   }
+  
   
   # ================================
   # 5. MALFORMAZIONI
   # ================================
   for(v in paste0("malfo", 1:8)){
     if(v %in% names(df)){
+      
+      # rimuove i punti dai codici
+      df[[v]] <- gsub("\\.", "", df[[v]])
+      
+      # missing/9 -> vuoto
       df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
     }
   }
@@ -861,21 +940,37 @@ transcode_complete <- function(df, eurocat_vars_list){
   }
   
   # ================================
-  # 9. MODIFICHE SPECIFICHE
+  # 9. MODIFICHE SPECIFICHE <- come Toscana (presyn e premal)
   # ================================
   
   if("pm" %in% names(df)){
     df$pm[is.na(df$pm) | df$pm == 9] <- 3
+    
+    # live birth vivo a 1 anno -> pm vuoto
+    if(all(c("type","death_date") %in% names(df))){
+      df$pm[df$type == 1 & df$death_date == "2222/22/22"] <- ""
+    }
   }
   
   if("presyn" %in% names(df)){
     df$presyn <- as.character(df$presyn)
+    
+    # 3 -> 1
+    df$presyn[df$presyn == "3"] <- "1"
+    
+    # missing/9 -> vuoto
     df$presyn[is.na(df$presyn) | df$presyn == 9 | df$presyn == "9"] <- ""
   }
   
   for(v in paste0("premal",1:8)){
     if(v %in% names(df)){
+      
       df[[v]] <- as.character(df[[v]])
+      
+      # 3 -> 1
+      df[[v]][df[[v]] == "3"] <- "1"
+      
+      # missing/9 -> vuoto
       df[[v]][is.na(df[[v]]) | df[[v]] == 9 | df[[v]] == "9"] <- ""
     }
   }
@@ -890,6 +985,18 @@ transcode_complete <- function(df, eurocat_vars_list){
     df$nbrmalf[is.na(df$nbrmalf) | df$nbrmalf == 9 | df$nbrmalf == "9"] <- ""
   }
   
+  # condisc = 1 solo per SDO
+  if(all(c("condisc","data_source") %in% names(df))){
+    df$condisc[df$data_source == "SDO"] <- 1
+  }
+  # nbrmalf = 9 per SDO
+  if(all(c("nbrmalf","nbrbaby","data_source") %in% names(df))){
+    
+    df$nbrmalf[
+      df$nbrbaby > 1 &
+        df$data_source == "SDO"
+    ] <- "9"
+  }
   # ================================
   # 10. NUMERICI → 99
   # ================================
@@ -903,17 +1010,28 @@ transcode_complete <- function(df, eurocat_vars_list){
     df[[v]][is.na(df[[v]]) | df[[v]] == 9] <- 99
   }
   
+  # whendisc diverso da 6 -> agedisc vuoto
+  if(all(c("whendisc","agedisc") %in% names(df))){
+    df$agedisc[df$whendisc != 6] <- ""
+  }
+  
   # ================================
   # 11. MADRE
   # ================================
-  if("occupmo" %in% names(df))       df$occupmo[is.na(df$occupmo)] <- 9999
-  if("mocitizenship" %in% names(df)) df$mocitizenship[is.na(df$mocitizenship)] <- 999
+  if("occupmo" %in% names(df)) {
+    df$occupmo[is.na(df$occupmo)] <- 9999
+    df$occupmo[df$occupmo == 99999] <- 9999
+  }
+  
+  if("mocitizenship" %in% names(df)) {
+    df$mocitizenship[is.na(df$mocitizenship)] <- 999
+  }
   
   # ================================
   # 12. STRINGHE GENERICHE
   # ================================
   vars_char <- c(
-    "pm_notes","illbef1","illbef2","illdur1","illdur2",
+    "pm_notes",
     "omim","orpha","extra_drugs",
     "drugs1","drugs2","drugs3","drugs4","drugs5",
     "sdo_number","resmo","imer_key","prog_paz_neo",
@@ -926,14 +1044,33 @@ transcode_complete <- function(df, eurocat_vars_list){
   }
   
   # ================================
-  # 13. FIX ILLDUR
+  # 13. FIX ILLDUR e ILLBEF
   # ================================
-  for(v in c("illdur1","illdur2")){
+  for(v in c("illdur1","illdur2","illbef1","illbef2")){
+    
     if(v %in% names(df)){
+      
       df[[v]] <- as.character(df[[v]])
-      df[[v]][is.na(df[[v]]) | trimws(df[[v]]) %in% c("", "9")] <- "9"
-      df[[v]] <- suppressWarnings(as.numeric(df[[v]]))
+      
+      df[[v]][
+        is.na(df[[v]]) | trimws(df[[v]]) == ""
+      ] <- "9"
+      
     }
+  }
+  
+  # coerenza illbef
+  if(all(c("illbef1","illbef2") %in% names(df))){
+    
+    df$illbef2[df$illbef1 == "0"] <- "0"
+    df$illbef2[df$illbef1 == "9"] <- "9"
+  }
+  
+  # coerenza illdur
+  if(all(c("illdur1","illdur2") %in% names(df))){
+    
+    df$illdur2[df$illdur1 == "0"] <- "0"
+    df$illdur2[df$illdur1 == "9"] <- "9"
   }
   
   # ================================
@@ -955,6 +1092,9 @@ transcode_complete <- function(df, eurocat_vars_list){
   
   return(df)
 }
+
+
+
 
 
 
@@ -1089,4 +1229,71 @@ eurocat_vars_list <- c(
   "pre_still"
 )
 
+#funzione di qc alla fine della pipeline SARA. Gira su check_qc_stage1_12_SARA.R
+
+check_validation <- function(sdo, stage_name) {
+  
+  cat("\n============================\n")
+  cat("CHECK", stage_name, "\n")
+  cat("============================\n")
+  
+  # MATRICE
+  tab <- table(
+    validated = sdo$validated,
+    validation_type = sdo$validation_type
+  )
+  
+  print(tab)
+  
+  # 1. validated binario
+  if (!all(sdo$validated %in% c(0,1))) {
+    stop(paste(stage_name, "- validated non binario"))
+  }
+  cat("OK validated\n")
+  
+  # 2. validation_type valido
+  valid_types <- c(
+    "0",
+    "1","2","3","4",
+    "1|2","1|3","1|4","2|3","2|4","3|4",
+    "1|2|3","1|2|4","1|3|4","2|3|4",
+    "1|2|3|4"
+  )
+  
+  if (!all(sdo$validation_type %in% valid_types)) {
+    bad <- unique(sdo$validation_type[!sdo$validation_type %in% valid_types])
+    print(bad)
+    stop(paste(stage_name, "- validation_type non valido"))
+  }
+  cat("OK validation_type\n")
+  
+  # 3. coerenza logica
+  if (any(sdo$validated == 0 & sdo$validation_type != "0")) {
+    stop(paste(stage_name, "- incoerenza validated=0"))
+  }
+  
+  if (any(sdo$validated == 1 & sdo$validation_type == "0")) {
+    stop(paste(stage_name, "- incoerenza validated=1"))
+  }
+  
+  cat("OK coerenza\n")
+  
+  # 4. formato stringa
+  check_format <- function(x) {
+    if (x == "0") return(TRUE)
+    parts <- unlist(strsplit(x, "\\|"))
+    all(parts %in% c("1","2","3","4")) &&
+      length(unique(parts)) == length(parts)
+  }
+  
+  format_ok <- sapply(sdo$validation_type, check_format)
+  
+  if (!all(format_ok)) {
+    print(unique(sdo$validation_type[!format_ok]))
+    stop(paste(stage_name, "- formato non valido"))
+  }
+  
+  cat("OK formato\n")
+  cat(">>>", stage_name, "OK\n")
+}
 
