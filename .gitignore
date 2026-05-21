@@ -3,8 +3,8 @@
 .Rapp.history
 
 # Session Data files
-.RData
-.RDataTmp
+.RData*
+.RDataTmp*
 
 # User-specific files
 .Ruserdata
@@ -50,3 +50,7 @@ rsconnect/
 
 # Export folder
 export/
+
+# macos 
+
+.DS_Store
